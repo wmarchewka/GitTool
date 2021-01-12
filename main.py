@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QApplication, QTableWidgetItem
+from PySide2.QtWidgets import QApplication, QTableWidgetItem, QFileDialog, QErrorMessage, QMessageBox
 from PySide2 import QtGui
 import os
 import sys
@@ -13,7 +13,7 @@ import shutil
 import git
 import stat
 import platform
-
+from pathlib import Path
 
 PIPE = subprocess.PIPE
 
@@ -37,10 +37,7 @@ class GitTools(object):
         self.logger = Logger()
         os_name = platform.system()
         self.log = self.logger.log
-        if os_name == 'Windows':
-            self.top_level_path = r"c:\Users\z0043s5r\Desktop\GITLAB"
-        elif os.name == 'Darwin':
-            self.top_level_path = r"/Users/waltermarchewka/Desktop/GITLAB"
+        self.top_level_path = None
         self.top_level_folders = []
         self.top_level_filenames = []
         self.log_queue = None
@@ -57,18 +54,46 @@ class GitTools(object):
         self.selected_item = None
         self.gitlab_key = None
         self.window = None
+        self.new_repository = None
+        self.selected_token = None
+        self.siemens_txt_url = 'https://code.siemens.com/'
+        self.gitlab_txt_url = 'https://gitlab.com/'
         self.startup_actions()
 
     def startup_actions(self):
         self.log.info('Startup actions')
-        self.gitlab_key = self.get_env_variable('GITLABKEY')
-        self.gitlab_create_connection(self.gitlab_key)
+        # self.gitlab_key = self.get_env_variable('GITLABKEY')
         self.window = MainWindow()
         self.window.show()
         self.signals_and_slots()
-        self.get_folder_list(self.top_level_path)
-        self.gitlab_list_all_projects()
-        #self.set_up_log_screen()
+        self.populate_screen()
+        # self.get_folder_list(self.top_level_path)
+        # self.gitlab_list_all_projects()
+
+    def show_error_message(self, error_message):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText(error_message)
+        msg.setInformativeText('More information')
+        msg.setWindowTitle("Error")
+        msg.exec_()
+
+    def create_connection_pressed(self):
+        url = None
+        token = self.selected_token
+        if self.window.siemens_url.isChecked():
+            url = self.siemens_txt_url
+        elif self.window.gitlab_url.isChecked():
+            url = self.gitlab_txt_url
+        self.gitlab_create_connection(url=url, private_token=token)
+
+    def populate_screen(self):
+        self.window.siemens_url.setText(self.siemens_txt_url)
+        self.window.gitlab_url.setText(self.gitlab_txt_url)
+        self.window.siemens_url.setChecked(True)
+        last_path = '/Users/waltermarchewka/Desktop/GITLAB'
+        self.window.local_path.setText(last_path)
+        self.top_level_path = last_path
 
     def get_env_variable(self, variable):
         result = os.environ.get(variable)
@@ -76,15 +101,19 @@ class GitTools(object):
         result = "CSC-L6_1YCs8kzvHxVETtDnt"
         return result
 
-    def gitlab_create_connection(self, private_token):
-        try:
-            #self.gitlab_connection = gitlab.Gitlab('https://gitlab.com/', private_token='{}'.format(private_token))
-            self.gitlab_connection = gitlab.Gitlab('https://code.siemens.com/', private_token='{}'.format(private_token))
-        except Exception as e:
-            self.log.critical("Exception creating GITLAB connection:{}".format(e))
-            return False
-        else:
-            return True
+    def gitlab_create_connection(self, url, private_token):
+        if url is not None and private_token is not None:
+            self.log.info("Creating connection")
+            try:
+                self.gitlab_connection = gitlab.Gitlab(url, private_token='{}'.format(private_token))
+                self.log.info("Setting url:{}".format(url))
+            except Exception as e:
+                self.log.critical("Exception creating GITLAB connection:{}".format(e))
+                self.show_error_message("Error Creating Connection")
+                return False
+            else:
+                self.log.info("Successfully created connection")
+                return True
 
     def signals_and_slots(self):
         self.window.add_all_to_remote.clicked.connect(self.add_all_to_remote_clicked)
@@ -93,10 +122,25 @@ class GitTools(object):
         self.window.table_widget.verticalHeader().sectionClicked.connect(self.vertical_header_clicked)
         self.window.delete_all_git_local.clicked.connect(self.delete_all_git_local)
         self.window.delete_selected_local_git.clicked.connect(self.delete_selected_local_git)
+        self.window.set_local_path.clicked.connect(self.set_local_path)
+        self.window.create_connection.clicked.connect(self.create_connection_pressed)
+        self.window.token.textChanged.connect(self.token_text_changed)
+        self.window.get_local_folders.clicked.connect(self.get_folder_list)
+
+    def token_text_changed(self):
+        self.selected_token = self.window.token.toPlainText()
+
+    def set_local_path(self):
+        home_dir = str(Path.home())
+        dialog = QFileDialog()
+        dialog.setFileMode(QFileDialog.DirectoryOnly)
+        self.top_level_path = QFileDialog.getExistingDirectory(None, 'Set Directory', )
+        self.window.local_path.setText(str(self.top_level_path))
 
     def add_all_to_remote_clicked(self):
-        self.add_folders_to_remote_thread = Thread(target=self.add_folders_to_remote)
-        self.add_folders_to_remote_thread.start()
+        #self.add_folders_to_remote_thread = Thread(target=self.add_folders_to_remote)
+        #self.add_folders_to_remote_thread.start()
+        self.add_folders_to_remote()
 
     def set_up_log_screen(self):
         self.log_queue = queue.Queue()
@@ -122,38 +166,42 @@ class GitTools(object):
     def delete_remote_repository(self, repository_name):
         self.log.info("Deleting:{}".format(repository_name))
 
-    def get_folder_list(self, path):
-        row_counter = 0
-        filenames = os.listdir(path)
-        for filename in filenames:  # loop through all the files and folders
-            filename_lowercase = self.to_lowercase(filename)
-            full_path = os.path.join(self.top_level_path, filename_lowercase)
-            if os.path.isdir(full_path):
-                self.top_level_folders.append(full_path)
-                self.top_level_filenames.append(filename_lowercase)
-        self.top_level_folders.sort()
-        self.top_level_filenames.sort()
-        for filename in self.top_level_filenames:
-            row_counter = row_counter + 1
-            self.window.table_widget.setItem(row_counter, 0, QTableWidgetItem(filename))
-            if self.check_for_git_folder(self.top_level_folders[row_counter - 1]):
-                self.window.tableWidget.item(row_counter, 0).setBackground(self.color_green)
-            else:
-                self.window.tableWidget.item(row_counter, 0).setBackground(self.color_red)
-            # self.window.tableWidget.item(row_counter, 0).setBackground(self.color_red)
+    def get_folder_list(self):
+        path = self.top_level_path
+        if path is not None:
+            row_counter = 0
+            filenames = os.listdir(path)
+            for filename in filenames:  # loop through all the files and folders
+                filename_lowercase = self.to_lowercase(filename)
+                full_path = os.path.join(self.top_level_path, filename_lowercase)
+                if os.path.isdir(full_path):
+                    self.top_level_folders.append(full_path)
+                    self.top_level_filenames.append(filename_lowercase)
+            self.top_level_folders.sort()
+            self.top_level_filenames.sort()
+            for filename in self.top_level_filenames:
+                row_counter = row_counter + 1
+                self.window.table_widget.setItem(row_counter, 0, QTableWidgetItem(filename))
+                if self.check_for_git_folder(self.top_level_folders[row_counter - 1]):
+                    self.window.tableWidget.item(row_counter, 0).setBackground(self.color_green)
+                else:
+                    self.window.tableWidget.item(row_counter, 0).setBackground(self.color_red)
+                # self.window.tableWidget.item(row_counter, 0).setBackground(self.color_red)
+        else:
+            self.show_error_message("Please select local Path")
 
     def check_for_git_folder(self, path):
-        #self.log.info("Check for GIT folder:{}".format(path))
+        # self.log.info("Check for GIT folder:{}".format(path))
         process = subprocess.Popen(["git", "status", "-u", "no"], cwd=path, stdout=PIPE, stderr=PIPE)
         stdoutput, stderroutput = process.communicate()
-        #self.log.info("STATUS:{}  ERROR:{}".format(stdoutput, stderroutput))
+        # self.log.info("STATUS:{}  ERROR:{}".format(stdoutput, stderroutput))
         if stderroutput:
             msg = "ERROR this is NOT a .git repository"
-            #self.log.info(msg)
+            # self.log.info(msg)
             return False
         else:
             msg = "SUCCESS this is a .git repository"
-            #self.log.info(msg)
+            # self.log.info(msg)
             return True
 
     @staticmethod
@@ -184,11 +232,11 @@ class GitTools(object):
         self.log.item("Delete selected local git:{}".format(self.vertical_row_selected))
         path = self.top_level_folders[self.vertical_row_selected + 1]
         self.delete_local_git(path)
-        self.get_folder_list(self.top_level_path)
+        self.get_folder_list()
 
     def delete_local_git(self, path):
         print(os.getcwd())
-        #path = path + "/.git"
+        # path = path + "/.git"
         process = subprocess.Popen(["git", "rm", "-r", path], stdout=PIPE, stderr=PIPE)
         stdoutput, stderroutput = process.communicate()
         self.log.info("INIT:{}  ERROR:{}".format(stdoutput, stderroutput))
@@ -204,56 +252,55 @@ class GitTools(object):
             self.delete_local_git(folder)
 
     def init(self, folder, row_counter):
-        process = subprocess.Popen(["git", "init"], cwd=folder, stdout=PIPE, stderr=PIPE)
-        stdoutput, stderroutput = process.communicate()
-        self.log.info("INIT:{}  ERROR:{}".format(stdoutput, stderroutput))
-        if stderroutput:
-            value = "ERROR : "
+        self.new_repository = None
+        self.new_repository = git.Repo.init(folder)
+        if self.new_repository:
+            msg = "Success"
         else:
-            value = "SUCCESS : "
-        if stdoutput.find(b'Reinitialized') != -1:
-            value = value + "RE-INIT"
-            self.commit_message = f'{"Changes"}'
-        if stdoutput.find(b'Reinitialized') == -1:
-            self.commit_message = f'{"Initial commit"}'
-        self.window.table_widget.setItem(row_counter, 1, QTableWidgetItem(value))
+            msg = "Failure"
+        self.window.table_widget.setItem(row_counter, 1, QTableWidgetItem("Success"))
 
     def add(self, folder, row_counter):
-        process = subprocess.Popen(["git", "add", "."], cwd=folder, stdout=PIPE, stderr=PIPE)
-        stdoutput, stderroutput = process.communicate()
-        self.log.info("ADD:{}  ERROR:{}".format(stdoutput, stderroutput))
-        if stderroutput:
-            value = "ERROR : "
+        try:
+            self.new_repository.git.add(all=True)
+        except Exception as e:
+            msg = "Error adding files to .GIT"
+            self.log.critical(msg)
+            value = "ERROR"
+            self.show_error_message(msg)
         else:
-            value = "SUCCESS : "
+            value = "SUCCESS"
+            status = self.new_repository.git.status()
+            self.log.info(status)
         self.window.table_widget.setItem(row_counter, 2, QTableWidgetItem(value))
 
     def commit(self, folder, row_counter):
-        process = subprocess.Popen(["git", "commit", "-m", self.commit_message], cwd=folder, stdout=PIPE, stderr=PIPE)
-        stdoutput, stderroutput = process.communicate()
-        self.log.info("COMMIT:{}  ERROR:{}".format(stdoutput, stderroutput))
-        if stderroutput:
-            value = "ERROR : "
+        try:
+            self.new_repository.git.commit(m='Initial commit')
+        except Exception as e:
+            self.log.critical(e)
+            msg = "Error committing files to .GIT"
+            value = "ERROR"
+            self.log.critical(msg)
+            self.show_error_message(msg)
         else:
-            value = "SUCCESS : "
-        # if stdoutput.find(b'Nothing to commit') != -1:
-        #value = value + str(stdoutput)
-        self.window.table_widget.setItem(row_counter, 3, QTableWidgetItem(value))
+            value = "SUCCESS"
+            status = self.new_repository.git.status()
+            self.log.info(status)
+            self.window.table_widget.setItem(row_counter, 3, QTableWidgetItem(value))
 
     def show(self, folder, row_counter):
-        process = subprocess.Popen(["git", "show"], cwd=folder, stdout=PIPE, stderr=PIPE)
-        stdoutput, stderroutput = process.communicate()
-        self.log.info("SHOW:{}  ERROR:{}".format(stdoutput, stderroutput))
-        if stderroutput:
-            value = "ERROR : "
-        else:
-            value = "SUCCESS : "
-        # if stdoutput.find(b'Nothing to commit') != -1:
-        # value = value + str(stdoutput)
-        self.window.table_widget.setItem(row_counter, 4, QTableWidgetItem(value))
+        status = self.new_repository.git.status()
+        self.log.info(status)
 
     def push(self, folder, row_counter, lowercase_folder):
         # git push --set-upstream git@gitlab.example.com:namespace/nonexistent-project.git master
+        self.new_repository.push()
+
+
+
+
+
         command = r'git@code.siemens.com:walter.marchewka/' + lowercase_folder + '.git'
         self.log.info("PUSH:{}".format(command))
         process = subprocess.Popen(["git", "push", "--set-upstream", command, "master"], cwd=folder, stdout=PIPE,
@@ -265,7 +312,7 @@ class GitTools(object):
         else:
             value = "SUCCESS : "
             # if stdoutput.find(b'Nothing to commit') != -1:
-        #value = value + str(stdoutput)
+        # value = value + str(stdoutput)
         self.window.table_widget.setItem(row_counter, 5, QTableWidgetItem(value))
 
     def gitlab_delete(self, id):
@@ -281,7 +328,7 @@ class GitTools(object):
         row_counter = 0
         for local_project_name in self.top_level_filenames:
             for project in [project for project in (remote_projects or [])]:
-            #for project in remote_projects:
+                # for project in remote_projects:
                 remote_project_name = project.name
                 remote_project_id = project.id
                 self.log.info("Project Name:{}   ID:{}".format(remote_project_name, remote_project_id))
@@ -291,7 +338,6 @@ class GitTools(object):
                 else:
                     value = "NO"
                 self.window.table_widget.setItem(row_counter, 6, QTableWidgetItem(value))
-
 
 
 if __name__ == "__main__":

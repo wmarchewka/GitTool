@@ -100,7 +100,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # ******************************************************************************
     def closeEvent(self, event: PySide2.QtGui.QCloseEvent) -> None:
         self.log.info("Close Event")
-        self.video_thread.stop()
 
     # ******************************************************************************
     def screen_setup(self):

@@ -38,10 +38,10 @@
      <widget class="QTabWidget" name="tabWidget">
       <property name="geometry">
        <rect>
-        <x>4</x>
-        <y>28</y>
+        <x>6</x>
+        <y>-2</y>
         <width>1179</width>
-        <height>713</height>
+        <height>737</height>
        </rect>
       </property>
       <property name="currentIndex">
@@ -49,75 +49,174 @@
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
-        <string>Tab 1</string>
+        <string>Files</string>
        </attribute>
-       <widget class="QWidget" name="verticalLayoutWidget">
+       <widget class="QTableWidget" name="tableWidget">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="geometry">
          <rect>
-          <x>6</x>
-          <y>6</y>
-          <width>1165</width>
-          <height>609</height>
+          <x>10</x>
+          <y>82</y>
+          <width>1163</width>
+          <height>323</height>
          </rect>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QTableWidget" name="tableWidget">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPlainTextEdit" name="plainTextEdit"/>
-         </item>
-        </layout>
+       </widget>
+       <widget class="QPlainTextEdit" name="plainTextEdit">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>414</y>
+          <width>1161</width>
+          <height>213</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="add_all_to_remote">
+        <property name="geometry">
+         <rect>
+          <x>720</x>
+          <y>10</y>
+          <width>175</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Add All to Remote</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="delete_all_git_local">
+        <property name="geometry">
+         <rect>
+          <x>722</x>
+          <y>42</y>
+          <width>177</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Delete All Local Git</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="delete_selected_local_git">
+        <property name="geometry">
+         <rect>
+          <x>890</x>
+          <y>10</y>
+          <width>185</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Delete Selected Local Git</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="get_local_folders">
+        <property name="geometry">
+         <rect>
+          <x>26</x>
+          <y>10</y>
+          <width>177</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Get Local Folders</string>
+        </property>
        </widget>
       </widget>
       <widget class="QWidget" name="tab_2">
        <attribute name="title">
-        <string>Tab 2</string>
+        <string>Setup</string>
        </attribute>
+       <widget class="QPushButton" name="set_local_path">
+        <property name="geometry">
+         <rect>
+          <x>22</x>
+          <y>16</y>
+          <width>123</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Set Local Path</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label">
+        <property name="geometry">
+         <rect>
+          <x>36</x>
+          <y>58</y>
+          <width>43</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>TOKEN</string>
+        </property>
+       </widget>
+       <widget class="QTextEdit" name="local_path">
+        <property name="geometry">
+         <rect>
+          <x>166</x>
+          <y>16</y>
+          <width>323</width>
+          <height>27</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QTextEdit" name="token">
+        <property name="geometry">
+         <rect>
+          <x>166</x>
+          <y>56</y>
+          <width>323</width>
+          <height>29</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QRadioButton" name="siemens_url">
+        <property name="geometry">
+         <rect>
+          <x>584</x>
+          <y>18</y>
+          <width>381</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QRadioButton" name="gitlab_url">
+        <property name="geometry">
+         <rect>
+          <x>584</x>
+          <y>48</y>
+          <width>381</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="create_connection">
+        <property name="geometry">
+         <rect>
+          <x>42</x>
+          <y>138</y>
+          <width>151</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Create Connection</string>
+        </property>
+       </widget>
       </widget>
-     </widget>
-     <widget class="QPushButton" name="add_all_to_remote">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>4</y>
-        <width>175</width>
-        <height>32</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Add All to Remote</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="delete_all_git_local">
-      <property name="geometry">
-       <rect>
-        <x>810</x>
-        <y>2</y>
-        <width>177</width>
-        <height>32</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Delete All Local Git</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="delete_selected_local_git">
-      <property name="geometry">
-       <rect>
-        <x>982</x>
-        <y>2</y>
-        <width>185</width>
-        <height>32</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Delete Selected Local Git</string>
-      </property>
      </widget>
     </widget>
    </widget>
