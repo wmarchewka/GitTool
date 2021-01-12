@@ -2,7 +2,7 @@ import PySide2
 from PySide2 import QtGui, QtWidgets
 from PySide2 import QtUiTools
 from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import QMainWindow, QAction, QDialog, QTableWidgetItem
+from PySide2.QtWidgets import QMainWindow, QAction, QDialog, QTableWidgetItem, QFileDialog
 
 import os
 import signal
@@ -21,16 +21,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.logger = Logger()
         self.log = self.logger.log
         self.log.info('{} initializing....'.format(__name__))
+        self.top_level_path = None
         self.window = None
         self.cw = None
+        self.url = None
+        self.token = None
         self.cw = self.centralWidget()
+        self.color_purple = QtGui.QColor("purple")
+        self.color_green = QtGui.QColor("green")
+        self.color_red = QtGui.QColor("red")
+        self.color_yellow = QtGui.QColor("yellow")
         self.startup_processes()
         self.log.info("{} init complete...".format(__name__))
 
-    # ******************************************************************************
-    def loadscreen(self):
+    def load_screen(self):
         """loads screen from disk and shows.
-
         """
         try:
             self.log.info('Loading screen ' + qtCreatorFile)
@@ -38,16 +43,67 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except FileNotFoundError:
             self.log.info("Could not find {}".format(self.guiname))
 
-    # ******************************************************************************
     def startup_processes(self):
         self.log.info("startup processes")
         self.menu_create()
-        self.loadscreen()
+        self.load_screen()
         self.table_setup()
         self.screen_setup()
         self.signals_and_slots()
 
-    # ******************************************************************************
+    def signals_and_slots(self):
+        """creates all signals and slots
+        tb=table, pb=pushbutton, te=textedit, rb=radiobutton
+        """
+        self.log.info("signals and slots")
+        self.tb_Repos.cellClicked.connect(self.table_clicked)
+        self.tb_Repos.horizontalHeader().sectionClicked.connect(self.horizontal_header_clicked)
+        self.tb_Repos.verticalHeader().sectionClicked.connect(self.vertical_header_clicked)
+        self.te_token.textChanged.connect(self.te_token_textChanged)
+        self.pb_delete_all_git_local.clicked.connect(self.pb_delete_all_git_local_clicked)
+        self.pb_delete_selected_local_git.clicked.connect(self.pb_delete_selected_local_git_clicked)
+        self.pb_set_local_path.clicked.connect(self.set_local_path_clicked)
+        self.pb_create_connection.clicked.connect(self.pb_create_connection_clicked)
+        self.pb_get_local_folders.clicked.connect(self.pb_get_local_folders_clicked)
+        self.pb_add_all_to_remote.clicked.connect(self.pb_add_all_to_remote_clicked)
+        self.rb_siemens_url.clicked.connect(self.radio_button_pushed)
+        self.rb_gitlab_url.clicked.connect(self.radio_button_pushed)
+
+    def set_local_clicked(self):
+        dialog = QFileDialog()
+        dialog.setFileMode(QFileDialog.DirectoryOnly)
+        self.top_level_path = QFileDialog.getExistingDirectory(None, 'Set Directory', )
+        self.window.local_path.setText(str(self.top_level_path))
+
+    def table_clicked(self, row, column):
+        self.log.info("TABLE CLICKED:  ROW: {}  COL: {}".format(row, column))
+        self.selected_item = row, column
+
+    def horizontal_header_clicked(self, index):
+        self.log.info("Horizontal index:{}".format(index))
+        self.horizontal_column_selected = index
+
+    def vertical_header_clicked(self, index):
+        self.log.info("Vertical index:{}".format(index))
+        self.vertical_row_selected = index
+
+    def token_text_changed(self):
+        self.token = self.window.token.toPlainText()
+
+    def delete_all_local_clicked(self):
+        self.main.delete_all_git_local()
+
+    def radio_button_pushed(self):
+        if self.rb_siemens_url.isChecked():
+            self.url = self.siemens_txt_url
+        elif self.rb_gitlab_url.isChecked():
+            self.url = self.gitlab_txt_url
+
+    def get_connection_info(self):
+        url = None
+        token = self.selected_token
+        return url, token
+
     def menu_create(self):
         """creates normal menu items for screen.
 
@@ -79,49 +135,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         filemenu.addAction(save_action)
         filemenu.addAction(exit_action)
 
-    # ******************************************************************************
-    def signals_and_slots(self):
-        """creates all signals and slots
-        """
-        self.log.info("signals and slots")
-    # ******************************************************************************
     def help_about(self):
         help_dialog = QDialog(self)
         help_dialog.resize(300, 150)
         help_dialog.exec_()
 
-    # ******************************************************************************
-    def link_clicked(self):
-        """link item was clicked. use to launch a web browser to document sheet, web page
-
-        """
-        self.log.info("Link:{}".format(self.link.text()))
-
-    # ******************************************************************************
     def closeEvent(self, event: PySide2.QtGui.QCloseEvent) -> None:
         self.log.info("Close Event")
 
-    # ******************************************************************************
     def screen_setup(self):
         """place any specific actions that need to be down to the  gui here
         """
         self.log.info("screen setup")
         # self.iddata.setReadOnly(True)
-    # ******************************************************************************
+
     def table_setup(self):
-        self.table_widget = self.tableWidget
-        self.table_widget.setRowCount(200)
-        self.table_widget.setColumnCount(7)
-        self.table_widget.setItem(0, 0, QTableWidgetItem("FOLDER"))
-        self.table_widget.setItem(0, 1, QTableWidgetItem("INIT"))
-        self.table_widget.setItem(0, 2, QTableWidgetItem("ADD"))
-        self.table_widget.setItem(0, 3, QTableWidgetItem("COMMITT"))
-        self.table_widget.setItem(0, 4, QTableWidgetItem("SHOW"))
-        self.table_widget.setItem(0, 5, QTableWidgetItem("PUSH"))
-        self.table_widget.setItem(0, 6, QTableWidgetItem("REMOTE"))
-
-
-        header = self.table_widget.horizontalHeader()
+        self.tb_Repos = self.tableWidget
+        self.tb_Repos.setRowCount(200)
+        self.tb_Repos.setColumnCount(7)
+        self.tb_Repos.setItem(0, 0, QTableWidgetItem("FOLDER"))
+        self.tb_Repos.setItem(0, 1, QTableWidgetItem("INIT"))
+        self.tb_Repos.setItem(0, 2, QTableWidgetItem("ADD"))
+        self.tb_Repos.setItem(0, 3, QTableWidgetItem("COMMITT"))
+        self.tb_Repos.setItem(0, 4, QTableWidgetItem("SHOW"))
+        self.tb_Repos.setItem(0, 5, QTableWidgetItem("PUSH"))
+        self.tb_Repos.setItem(0, 6, QTableWidgetItem("REMOTE"))
+        header = self.tb_Repos.horizontalHeader()
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
@@ -130,11 +169,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         header.setSectionResizeMode(5, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(6, QtWidgets.QHeaderView.ResizeToContents)
 
-    # ******************************************************************************
     def exit_app(self):
         self.close()
 
-    # ******************************************************************************
     def exit_signalling(self):
         """
         set up exit signalling
@@ -144,7 +181,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         signal.signal(signal.SIGTERM, self.exit_application)
         self.log.debug("Setting up exit signaling...")
 
-    # *******************************************************************************************
     def exit_application(self, signum, frame):
         """
         called when an applpication shutdown is caught
@@ -153,3 +189,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         self.log.info("Received signal from signum: {} with frame:{}".format(signum, frame))
         self.shutdown()
+
+    def table_set_item_text(self, row, column, text):
+        self.window.table_widget.setItem(row, column, QTableWidgetItem(text))
+
+    def table_set_item_background(self, row, column, color):
+        background_color = None
+        if color == 'green':
+            background_color = self.color_green
+        if color == 'red':
+            background_color = self.color_red
+        self.gui.tableWidget.item(row, column).setBackground(background_color)
