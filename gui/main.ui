@@ -39,9 +39,9 @@
       <property name="geometry">
        <rect>
         <x>6</x>
-        <y>-2</y>
+        <y>6</y>
         <width>1179</width>
-        <height>737</height>
+        <height>729</height>
        </rect>
       </property>
       <property name="currentIndex">
@@ -206,14 +206,14 @@
        <widget class="QPushButton" name="pb_create_connection">
         <property name="geometry">
          <rect>
-          <x>42</x>
-          <y>138</y>
-          <width>151</width>
+          <x>26</x>
+          <y>108</y>
+          <width>197</width>
           <height>32</height>
          </rect>
         </property>
         <property name="text">
-         <string>Create Connection</string>
+         <string>Create GitLab Connection</string>
         </property>
        </widget>
       </widget>

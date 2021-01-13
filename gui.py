@@ -15,22 +15,15 @@ Ui_MainWindow, QtBaseClass = QtUiTools.loadUiType(qtCreatorFile)
 
 class MainWindow(QMainWindow, Ui_MainWindow):
 
-    def __init__(self):
+    def __init__(self, main, data):
         super(MainWindow, self).__init__()
+        self.selected_item = None
         self.setupUi(self)
         self.logger = Logger()
+        self.main = main
+        self.data = data
         self.log = self.logger.log
         self.log.info('{} initializing....'.format(__name__))
-        self.top_level_path = None
-        self.window = None
-        self.cw = None
-        self.url = None
-        self.token = None
-        self.cw = self.centralWidget()
-        self.color_purple = QtGui.QColor("purple")
-        self.color_green = QtGui.QColor("green")
-        self.color_red = QtGui.QColor("red")
-        self.color_yellow = QtGui.QColor("yellow")
         self.startup_processes()
         self.log.info("{} init complete...".format(__name__))
 
@@ -59,7 +52,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tb_Repos.cellClicked.connect(self.table_clicked)
         self.tb_Repos.horizontalHeader().sectionClicked.connect(self.horizontal_header_clicked)
         self.tb_Repos.verticalHeader().sectionClicked.connect(self.vertical_header_clicked)
-        self.te_token.textChanged.connect(self.te_token_textChanged)
+        self.te_token.textChanged.connect(self.te_token_text_changed)
         self.pb_delete_all_git_local.clicked.connect(self.pb_delete_all_git_local_clicked)
         self.pb_delete_selected_local_git.clicked.connect(self.pb_delete_selected_local_git_clicked)
         self.pb_set_local_path.clicked.connect(self.set_local_path_clicked)
@@ -69,15 +62,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.rb_siemens_url.clicked.connect(self.radio_button_pushed)
         self.rb_gitlab_url.clicked.connect(self.radio_button_pushed)
 
-    def set_local_clicked(self):
+    def pb_create_connection_clicked(self):
+        pass
+
+    def set_local_path_clicked(self):
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.DirectoryOnly)
-        self.top_level_path = QFileDialog.getExistingDirectory(None, 'Set Directory', )
-        self.window.local_path.setText(str(self.top_level_path))
+        self.data.top_level_path = QFileDialog.getExistingDirectory(None, 'Set Directory', )
+        self.te_local_path.setText(str(self.data.top_level_path))
 
     def table_clicked(self, row, column):
+        # FOLDER, INIT, ADD, COMMIT, SHOW, PUSH, REMOTE
         self.log.info("TABLE CLICKED:  ROW: {}  COL: {}".format(row, column))
         self.selected_item = row, column
+        self.tb_Repos.clearSelection()
+        if column == 1:  # init
+            self.main.gitCommands.init(path=self.data.top_level_folders[row - 1], row=row - 1)
+            self.main.gitCommands.init_check(path=self.data.top_level_folders[row - 1])
+        if column == 2:  # add
+            self.main.gitCommands.add(path=self.data.top_level_folders[row - 1], row=row - 1)
+            self.main.folderCommands.add_check(row)
+        if column == 3:  # commit
+            self.main.gitCommands.commit(path=self.data.top_level_folders[row - 1], row=row - 1)
+            self.main.folderCommands.commit_check(row)
 
     def horizontal_header_clicked(self, index):
         self.log.info("Horizontal index:{}".format(index))
@@ -87,10 +94,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.log.info("Vertical index:{}".format(index))
         self.vertical_row_selected = index
 
-    def token_text_changed(self):
-        self.token = self.window.token.toPlainText()
+    def te_token_text_changed(self):
+        self.token = self.te_token.toPlainText()
 
-    def delete_all_local_clicked(self):
+    def pb_delete_all_git_local_clicked(self):
         self.main.delete_all_git_local()
 
     def radio_button_pushed(self):
@@ -99,10 +106,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         elif self.rb_gitlab_url.isChecked():
             self.url = self.gitlab_txt_url
 
-    def get_connection_info(self):
-        url = None
-        token = self.selected_token
-        return url, token
+    def pb_delete_selected_local_git_clicked(self):
+        pass
+
+    def pb_get_local_folders_clicked(self):
+        self.main.folderCommands.get_folder_list()
+        self.main.folderCommands.startup_check()
+
+    def pb_add_all_to_remote_clicked(self):
+        pass
 
     def menu_create(self):
         """creates normal menu items for screen.
@@ -150,7 +162,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # self.iddata.setReadOnly(True)
 
     def table_setup(self):
-        self.tb_Repos = self.tableWidget
+        self.tb_Repos = self.tb_Repos
         self.tb_Repos.setRowCount(200)
         self.tb_Repos.setColumnCount(7)
         self.tb_Repos.setItem(0, 0, QTableWidgetItem("FOLDER"))
@@ -183,7 +195,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def exit_application(self, signum, frame):
         """
-        called when an applpication shutdown is caught
+        called when an application shutdown is caught
         :param signum:
         :param frame:
         """
@@ -191,12 +203,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.shutdown()
 
     def table_set_item_text(self, row, column, text):
-        self.window.table_widget.setItem(row, column, QTableWidgetItem(text))
+        self.tb_Repos.setItem(row, column, QTableWidgetItem(text))
 
     def table_set_item_background(self, row, column, color):
         background_color = None
         if color == 'green':
-            background_color = self.color_green
+            background_color = self.data.color_green
         if color == 'red':
-            background_color = self.color_red
-        self.gui.tableWidget.item(row, column).setBackground(background_color)
+            background_color = self.data.color_red
+        # self.tb_Repos.item(row, column).setBackground(background_color)
+        self.tb_Repos.item(row, column).setBackground(background_color)
