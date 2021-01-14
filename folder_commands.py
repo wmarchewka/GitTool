@@ -19,6 +19,7 @@ class FolderCommands(object):
         # self.git_commands = main.gitLabCommands
 
     def get_folder_list(self):
+        self.log.debug("Getting folder list")
         top_level_path = self.data.top_level_path
         self.data.top_level_folders = []
         self.data.top_level_filenames = []
@@ -37,14 +38,18 @@ class FolderCommands(object):
             self.show_error_message("Please select local Path")
 
     def startup_check(self):
+        self.log.debug("Startup check")
         row_counter = 0
         for filename in self.data.top_level_filenames:
             row_counter = row_counter + 1
             self.gui.table_set_item_text(row=row_counter, column=0, text=filename)
             self.init_check(row_counter)
             self.add_check(row_counter)
+            self.commit_check(row_counter)
+            self.remote_check(row_counter)
 
     def init_check(self, row_counter):
+        self.log.debug("INIT check")
         result, msg = self.main.gitCommands.init_check(self.data.top_level_folders[row_counter - 1])
         if result:
             self.gui.table_set_item_text(row_counter, 1, str(msg))
@@ -54,6 +59,7 @@ class FolderCommands(object):
             self.gui.table_set_item_background(row_counter, 1, 'red')
 
     def add_check(self, row_counter):
+        self.log.debug("ADD check")
         result, msg = self.main.gitCommands.add_check(self.data.top_level_folders[row_counter - 1])
         if result:
             self.gui.table_set_item_text(row_counter, 2, str(msg))
@@ -62,15 +68,46 @@ class FolderCommands(object):
             self.gui.table_set_item_text(row_counter, 2, str(msg))
             self.gui.table_set_item_background(row_counter, 2, 'red')
 
+    def commit_check(self, row_counter):
+        self.log.debug("COMMIT check")
+        result, msg = self.main.gitCommands.commit_check(self.data.top_level_folders[row_counter - 1])
+        if result:
+            self.gui.table_set_item_text(row_counter, 3, str(msg))
+            self.gui.table_set_item_background(row_counter, 3, 'green')
+        else:
+            self.gui.table_set_item_text(row_counter, 3, str(msg))
+            self.gui.table_set_item_background(row_counter, 3, 'red')
+
+    def remote_check(self, row_counter):
+        self.log.debug("REMOTE check")
+        result, msg = self.main.gitCommands.remote_check(self.data.top_level_folders[row_counter - 1])
+        if result:
+            self.gui.table_set_item_text(row_counter, 4, str(msg))
+            self.gui.table_set_item_background(row_counter, 4, 'green')
+        else:
+            self.gui.table_set_item_text(row_counter, 4, str(msg))
+            self.gui.table_set_item_background(row_counter, 4, 'red')
+
+    def push_check(self, row_counter):
+        self.log.debug("REMOTE check")
+        result, msg = self.main.gitCommands.remote_check(self.data.top_level_folders[row_counter - 1])
+        if result:
+            self.gui.table_set_item_text(row_counter, 4, str(msg))
+            self.gui.table_set_item_background(row_counter, 4, 'green')
+        else:
+            self.gui.table_set_item_text(row_counter, 4, str(msg))
+            self.gui.table_set_item_background(row_counter, 4, 'red')
+
     def add_folders_to_remote(self):
+        self.log.debug("Add folders to remote")
         self.gui.tb_Repos.clearContents()
         self.gui.table_setup()
         all_record = ""
         row_counter = 0
-        self.log.info("Folders:{}".format(self.data.top_level_folders))
+        self.log.debug("Folders:{}".format(self.data.top_level_folders))
         for folder in self.data.top_level_folders:
             row_counter = row_counter + 1
-            self.log.info("Folder:{}".format(folder))
+            self.log.debug("Folder:{}".format(folder))
             self.main.git_commands.init(folder=folder, row_counter=row_counter)
             self.main.git_commands.add(folder=folder, row_counter=row_counter)
             self.main.git_commands.commit(folder=folder, row_counter=row_counter)
@@ -86,4 +123,4 @@ class FolderCommands(object):
         return lower_name
 
     def show_error_message(self, msg):
-        self.log.info("Show error message: {}".format(msg))
+        self.log.debug("Show error message: {}".format(msg))

@@ -21,7 +21,7 @@ class Logger(object):
         return cls._instance
 
     # ****************************************************************************************************
-    def __init__(self, disabled=False, level=logging.INFO):
+    def __init__(self, disabled=False, level=logging.DEBUG):
         if Logger._init is None:
             Logger._init = "init"
             if os.name is "nt":

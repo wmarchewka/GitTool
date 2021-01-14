@@ -2,7 +2,7 @@ import PySide2
 from PySide2 import QtGui, QtWidgets
 from PySide2 import QtUiTools
 from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import QMainWindow, QAction, QDialog, QTableWidgetItem, QFileDialog
+from PySide2.QtWidgets import QMainWindow, QAction, QDialog, QTableWidgetItem, QFileDialog, QDesktopWidget, QWidget
 
 import os
 import signal
@@ -23,32 +23,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.main = main
         self.data = data
         self.log = self.logger.log
-        self.log.info('{} initializing....'.format(__name__))
+        self.log.debug('{} initializing....'.format(__name__))
         self.startup_processes()
-        self.log.info("{} init complete...".format(__name__))
+        self.log.debug("{} init complete...".format(__name__))
 
     def load_screen(self):
         """loads screen from disk and shows.
         """
         try:
-            self.log.info('Loading screen ' + qtCreatorFile)
+            self.log.debug('Loading screen ' + qtCreatorFile)
             self.show()
+            self.monitor_set(1, self)
         except FileNotFoundError:
-            self.log.info("Could not find {}".format(self.guiname))
+            self.log.debug("Could not find {}".format(self.guiname))
 
     def startup_processes(self):
-        self.log.info("startup processes")
+        self.log.debug("startup processes")
+        self.signals_and_slots()
         self.menu_create()
         self.load_screen()
         self.table_setup()
         self.screen_setup()
-        self.signals_and_slots()
 
     def signals_and_slots(self):
         """creates all signals and slots
         tb=table, pb=pushbutton, te=textedit, rb=radiobutton
         """
-        self.log.info("signals and slots")
+        self.log.debug("GUI create signals and slots")
         self.tb_Repos.cellClicked.connect(self.table_clicked)
         self.tb_Repos.horizontalHeader().sectionClicked.connect(self.horizontal_header_clicked)
         self.tb_Repos.verticalHeader().sectionClicked.connect(self.vertical_header_clicked)
@@ -59,13 +60,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pb_create_connection.clicked.connect(self.pb_create_connection_clicked)
         self.pb_get_local_folders.clicked.connect(self.pb_get_local_folders_clicked)
         self.pb_add_all_to_remote.clicked.connect(self.pb_add_all_to_remote_clicked)
-        self.rb_siemens_url.clicked.connect(self.radio_button_pushed)
-        self.rb_gitlab_url.clicked.connect(self.radio_button_pushed)
+        self.rb_siemens_url.toggled.connect(self.radio_button_pushed)
+        self.rb_gitlab_url.toggled.connect(self.radio_button_pushed)
 
     def pb_create_connection_clicked(self):
         pass
 
     def set_local_path_clicked(self):
+        self.log.debug("Local PATH clicked")
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.DirectoryOnly)
         self.data.top_level_path = QFileDialog.getExistingDirectory(None, 'Set Directory', )
@@ -73,7 +75,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def table_clicked(self, row, column):
         # FOLDER, INIT, ADD, COMMIT, SHOW, PUSH, REMOTE
-        self.log.info("TABLE CLICKED:  ROW: {}  COL: {}".format(row, column))
+        self.log.debug("TABLE CLICKED:  ROW: {}  COL: {}".format(row, column))
         self.selected_item = row, column
         self.tb_Repos.clearSelection()
         if column == 1:  # init
@@ -85,13 +87,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if column == 3:  # commit
             self.main.gitCommands.commit(path=self.data.top_level_folders[row - 1], row=row - 1)
             self.main.folderCommands.commit_check(row)
+        if column == 4:  # commit
+            self.main.gitCommands.remote(path=self.data.top_level_folders[row - 1], row=row - 1)
+            self.main.folderCommands.remote_check(row)
+        if column == 5:  # commit
+            self.main.gitCommands.push(path=self.data.top_level_folders[row - 1], row=row - 1)
+            self.main.folderCommands.push_check(row)
 
     def horizontal_header_clicked(self, index):
-        self.log.info("Horizontal index:{}".format(index))
+        self.log.debug("Horizontal header clicked  Index:{}".format(index))
         self.horizontal_column_selected = index
 
     def vertical_header_clicked(self, index):
-        self.log.info("Vertical index:{}".format(index))
+        self.log.debug("Vertical header clicked   Index:{}".format(index))
         self.vertical_row_selected = index
 
     def te_token_text_changed(self):
@@ -101,15 +109,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.main.delete_all_git_local()
 
     def radio_button_pushed(self):
+        self.log.debug("Radio Button pushed")
         if self.rb_siemens_url.isChecked():
-            self.url = self.siemens_txt_url
+            self.data.url = self.data.siemens_txt_url
+            self.log.debug("Siemens URL selected")
         elif self.rb_gitlab_url.isChecked():
-            self.url = self.gitlab_txt_url
+            self.data.url = self.data.gitlab_txt_url
+            self.log.debug("GITLAB URL selected")
 
     def pb_delete_selected_local_git_clicked(self):
         pass
 
     def pb_get_local_folders_clicked(self):
+        self.log.debug("GIT Local Folders clicked")
         self.main.folderCommands.get_folder_list()
         self.main.folderCommands.startup_check()
 
@@ -120,7 +132,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """creates normal menu items for screen.
 
         """
-        self.log.info("creating menus")
+        self.log.debug("creating menus")
         main_menu = self.menuBar()
         main_menu.setNativeMenuBar(False)
         filemenu = main_menu.addMenu("File")
@@ -153,15 +165,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         help_dialog.exec_()
 
     def closeEvent(self, event: PySide2.QtGui.QCloseEvent) -> None:
-        self.log.info("Close Event")
+        self.log.debug("Close Event")
 
     def screen_setup(self):
         """place any specific actions that need to be down to the  gui here
         """
-        self.log.info("screen setup")
-        # self.iddata.setReadOnly(True)
+        self.log.debug("screen setup")
+        self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'files'))
+        self.rb_gitlab_url.setChecked(True)
 
     def table_setup(self):
+        self.log.debug("Table Names Setup")
         self.tb_Repos = self.tb_Repos
         self.tb_Repos.setRowCount(200)
         self.tb_Repos.setColumnCount(7)
@@ -169,9 +183,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tb_Repos.setItem(0, 1, QTableWidgetItem("INIT"))
         self.tb_Repos.setItem(0, 2, QTableWidgetItem("ADD"))
         self.tb_Repos.setItem(0, 3, QTableWidgetItem("COMMITT"))
-        self.tb_Repos.setItem(0, 4, QTableWidgetItem("SHOW"))
+        self.tb_Repos.setItem(0, 4, QTableWidgetItem("REMOTE"))
         self.tb_Repos.setItem(0, 5, QTableWidgetItem("PUSH"))
-        self.tb_Repos.setItem(0, 6, QTableWidgetItem("REMOTE"))
+        self.tb_Repos.setItem(0, 6, QTableWidgetItem("REMOTE REPO?"))
         header = self.tb_Repos.horizontalHeader()
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
@@ -199,7 +213,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         :param signum:
         :param frame:
         """
-        self.log.info("Received signal from signum: {} with frame:{}".format(signum, frame))
+        self.log.debug("Received signal from signum: {} with frame:{}".format(signum, frame))
         self.shutdown()
 
     def table_set_item_text(self, row, column, text):
@@ -213,3 +227,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             background_color = self.data.color_red
         # self.tb_Repos.item(row, column).setBackground(background_color)
         self.tb_Repos.item(row, column).setBackground(background_color)
+
+    def monitor_set(self, selected_screen, window):
+        """creates list of available monitors and moves window to
+        monitor selected
+        :rtype: object
+        """
+        screens_available = QDesktopWidget().screenCount()
+        primary_screen = QDesktopWidget().primaryScreen()
+        monitor = QDesktopWidget().screenGeometry(selected_screen)
+        window.move(monitor.left(), monitor.top())
+        self.log.debug("Screens Available:{}  Primary Screen:{}".format(screens_available, primary_screen))

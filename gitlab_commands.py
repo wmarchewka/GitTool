@@ -63,5 +63,8 @@ class GitLabCommands(object):
                     value = "NO"
                 self.gui.set_item_text(row_counter, 6, value)
 
+    def delete_remote_repository(self, repository_name):
+        self.log.info("Deleting:{}".format(repository_name))
+
     # url, token = self.get_connection_info()
     # if self.gitlab_create_connection(url=url, private_token=token):

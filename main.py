@@ -28,6 +28,7 @@ class BteTools(object):
         # self.gitlab_key = self.get_env_variable('GITLABKEY')
         self.populate_screen()
         self.gui.show()
+        self.gui.pb_get_local_folders_clicked()
 
     @staticmethod
     def show_error_message(error_message):
@@ -50,9 +51,6 @@ class BteTools(object):
         self.log.info("Get ENV Variable:{}".format(variable))
         env_var = "CSC-L6_1YCs8kzvHxVETtDnt"
         return env_var
-
-    def delete_remote_repository(self, repository_name):
-        self.log.info("Deleting:{}".format(repository_name))
 
 
 if __name__ == "__main__":
