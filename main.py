@@ -8,7 +8,7 @@ from git_commands import GitCommands
 from gitlab_commands import GitLabCommands
 from folder_commands import FolderCommands
 from data import Data
-
+import threading
 
 class BteTools(object):
     def __init__(self):
@@ -28,7 +28,9 @@ class BteTools(object):
         # self.gitlab_key = self.get_env_variable('GITLABKEY')
         self.populate_screen()
         self.gui.show()
-        self.gui.pb_get_local_folders_clicked()
+        # self.gui.pb_get_local_folders_clicked()
+        # get_folders_thread = threading.Thread(target = )
+        # get_folders_thread.start()
 
     @staticmethod
     def show_error_message(error_message):
@@ -44,7 +46,6 @@ class BteTools(object):
         self.gui.rb_gitlab_url.setText(self.data.gitlab_txt_url)
         self.gui.rb_gitlab_url.setChecked(True)
         self.gui.te_local_path.setText(self.data.top_level_path)
-        self.gui.te_token.setText('zX3Sz3_-3XadLdHqD_tR')
 
     def get_env_variable(self, variable):
         # env_var = os.environ.get(variable)

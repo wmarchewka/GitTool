@@ -23,7 +23,7 @@ def siemens():
 
 def git_lab():
     gitlab_project_id = 23596290
-    gitlab_url = "https:://gitlab.com/siemensbte"
+    gitlab_url = "https://gitlab.com/siemensbte"
     gitlab_private_token = 'zX3Sz3_-3XadLdHqD_tR'
     gitlab_connection = gitlab.Gitlab('https://gitlab.com/', private_token='{}'.format(gitlab_private_token))
 

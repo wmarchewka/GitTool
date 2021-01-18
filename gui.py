@@ -3,7 +3,8 @@ from PySide2 import QtGui, QtWidgets
 from PySide2 import QtUiTools
 from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QMainWindow, QAction, QDialog, QTableWidgetItem, QFileDialog, QDesktopWidget, QWidget
-
+from PySide2 import QtCore
+import threading
 import os
 import signal
 from logger import Logger
@@ -54,17 +55,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tb_Repos.horizontalHeader().sectionClicked.connect(self.horizontal_header_clicked)
         self.tb_Repos.verticalHeader().sectionClicked.connect(self.vertical_header_clicked)
         self.te_token.textChanged.connect(self.te_token_text_changed)
-        self.pb_delete_all_git_local.clicked.connect(self.pb_delete_all_git_local_clicked)
         self.pb_delete_selected_local_git.clicked.connect(self.pb_delete_selected_local_git_clicked)
+        self.pb_delete_selected_remote_git.clicked.connect(self.pb_delete_selected_remote_git_clicked)
         self.pb_set_local_path.clicked.connect(self.set_local_path_clicked)
-        self.pb_create_connection.clicked.connect(self.pb_create_connection_clicked)
         self.pb_get_local_folders.clicked.connect(self.pb_get_local_folders_clicked)
-        self.pb_add_all_to_remote.clicked.connect(self.pb_add_all_to_remote_clicked)
+        self.pb_create_and_push.clicked.connect(self.create_and_push)
         self.rb_siemens_url.toggled.connect(self.radio_button_pushed)
         self.rb_gitlab_url.toggled.connect(self.radio_button_pushed)
+        # self.pb_delete_all_git_local.clicked.connect(self.pb_delete_all_git_local_clicked)
+        # self.pb_create_connection.clicked.connect(self.pb_create_connection_clicked)
+        # self.pb_add_all_to_remote.clicked.connect(self.pb_add_all_to_remote_clicked)
 
-    def pb_create_connection_clicked(self):
-        pass
+    def create_and_push(self):
+        self.log.debug('Create and push')
+        rows = self.vertical_selection
+        create_and_push_thread = threading.Thread(target=self.main.folderCommands.add_folder_to_remote, args=(rows,))
+        create_and_push_thread.start()
+        # self.main.folderCommands.add_folder_to_remote(rows=rows)
+        self.tb_Repos.clearSelection()
 
     def set_local_path_clicked(self):
         self.log.debug("Local PATH clicked")
@@ -78,21 +86,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.log.debug("TABLE CLICKED:  ROW: {}  COL: {}".format(row, column))
         self.selected_item = row, column
         self.tb_Repos.clearSelection()
-        if column == 1:  # init
-            self.main.gitCommands.init(path=self.data.top_level_folders[row - 1], row=row - 1)
-            self.main.gitCommands.init_check(path=self.data.top_level_folders[row - 1])
-        if column == 2:  # add
-            self.main.gitCommands.add(path=self.data.top_level_folders[row - 1], row=row - 1)
-            self.main.folderCommands.add_check(row)
-        if column == 3:  # commit
-            self.main.gitCommands.commit(path=self.data.top_level_folders[row - 1], row=row - 1)
-            self.main.folderCommands.commit_check(row)
-        if column == 4:  # commit
-            self.main.gitCommands.remote(path=self.data.top_level_folders[row - 1], row=row - 1)
-            self.main.folderCommands.remote_check(row)
-        if column == 5:  # commit
-            self.main.gitCommands.push(path=self.data.top_level_folders[row - 1], row=row - 1)
-            self.main.folderCommands.push_check(row)
+        self.log.debug("********************************************************************************************")
+        if self.check_data_exists(row):
+            if column == 1:  # init
+                self.main.gitCommands.init(path=self.data.top_level_folders[row - 1], row=row - 1)
+                self.main.folderCommands.init_check(row)
+            if column == 2:  # add
+                self.main.gitCommands.add(path=self.data.top_level_folders[row - 1], row=row - 1)
+                self.main.folderCommands.add_check(row)
+            if column == 3:  # commit
+                self.main.gitCommands.commit(path=self.data.top_level_folders[row - 1], row=row - 1)
+                self.main.folderCommands.commit_check(row)
+            if column == 4:  # remote
+                self.main.gitCommands.remote(path=self.data.top_level_folders[row - 1], row=row - 1)
+                self.main.folderCommands.remote_check(row)
+            if column == 5:  # push
+                self.main.gitCommands.push(path=self.data.top_level_folders[row - 1], row=row - 1)
+                self.main.folderCommands.push_check(row)
+            if column == 6:  # commit
+                self.main.gitCommands.repo_check(path=self.data.top_level_folders[row - 1], row=row - 1)
+                self.main.folderCommands.repo_check(row)
+        self.tb_Repos.clearSelection()
 
     def horizontal_header_clicked(self, index):
         self.log.debug("Horizontal header clicked  Index:{}".format(index))
@@ -100,10 +114,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def vertical_header_clicked(self, index):
         self.log.debug("Vertical header clicked   Index:{}".format(index))
-        self.vertical_row_selected = index
+        if self.check_data_exists(index):
+            self.vertical_row_selected = index
+            self.vertical_selection = []
+            indexes = self.tb_Repos.selectionModel().selectedRows()
+            for index in sorted(indexes):
+                self.log.debug('Row %d is selected' % index.row())
+                self.vertical_selection.append(index.row())
+            self.log.debug("Vertical selection:{}".format(self.vertical_selection))
 
     def te_token_text_changed(self):
-        self.token = self.te_token.toPlainText()
+        self.data.token = self.te_token.toPlainText()
 
     def pb_delete_all_git_local_clicked(self):
         self.main.delete_all_git_local()
@@ -112,18 +133,46 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.log.debug("Radio Button pushed")
         if self.rb_siemens_url.isChecked():
             self.data.url = self.data.siemens_txt_url
+            self.gui.te_token.setText(self.data.siemens_private_token)
             self.log.debug("Siemens URL selected")
         elif self.rb_gitlab_url.isChecked():
             self.data.url = self.data.gitlab_txt_url
+            self.te_token.setText(self.data.gitlab_private_token)
             self.log.debug("GITLAB URL selected")
 
+    def pb_delete_selected_remote_git_clicked(self):
+        rows = self.vertical_selection
+        self.main.folderCommands.delete_selected_remote_git(rows)
+        self.tb_Repos.clearSelection()
+
     def pb_delete_selected_local_git_clicked(self):
-        pass
+        rows = self.vertical_selection
+        self.main.folderCommands.delete_selected_local_git(rows)
+        self.tb_Repos.clearSelection()
 
     def pb_get_local_folders_clicked(self):
         self.log.debug("GIT Local Folders clicked")
+        get_folders_thread = threading.Thread(target=self.get_all_folders_thread)
+        get_folders_thread.start()
+        self.tb_Repos.clearSelection()
+
+    def get_all_folders_thread(self):
         self.main.folderCommands.get_folder_list()
-        self.main.folderCommands.startup_check()
+        self.main.folderCommands.check_all_folders()
+
+    def check_data_exists(self, row):
+        self.log.debug("check if data exists")
+        try:
+            if self.data.top_level_folders[row - 1]:
+                result = True
+            else:
+                result = False
+        except IndexError as error:
+            self.log.debug("check data exists ERROR:{}".format(error))
+            result = False
+        else:
+            result = True
+        return result
 
     def pb_add_all_to_remote_clicked(self):
         pass
@@ -179,13 +228,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tb_Repos = self.tb_Repos
         self.tb_Repos.setRowCount(200)
         self.tb_Repos.setColumnCount(7)
-        self.tb_Repos.setItem(0, 0, QTableWidgetItem("FOLDER"))
-        self.tb_Repos.setItem(0, 1, QTableWidgetItem("INIT"))
-        self.tb_Repos.setItem(0, 2, QTableWidgetItem("ADD"))
-        self.tb_Repos.setItem(0, 3, QTableWidgetItem("COMMITT"))
-        self.tb_Repos.setItem(0, 4, QTableWidgetItem("REMOTE"))
-        self.tb_Repos.setItem(0, 5, QTableWidgetItem("PUSH"))
-        self.tb_Repos.setItem(0, 6, QTableWidgetItem("REMOTE REPO?"))
+        self.tb_Repos.setHorizontalHeaderLabels(
+            ['REPO NAME', 'INIT', 'ADD', 'COMMIT', 'REMOTE', 'PUSH', 'REMOTE', 'REPO?'])
+        # self.tb_Repos.horizontalHeaderItem().setTextAlignment(QtCore.Qt.AlignHCenter)
+        # self.tb_Repos.setItem(0, 0, QTableWidgetItem("FOLDER"))
+        # self.tb_Repos.setItem(0, 1, QTableWidgetItem("INIT"))
+        # self.tb_Repos.setItem(0, 2, QTableWidgetItem("ADD"))
+        # self.tb_Repos.setItem(0, 3, QTableWidgetItem("COMMIT"))
+        # self.tb_Repos.setItem(0, 4, QTableWidgetItem("REMOTE"))
+        # self.tb_Repos.setItem(0, 5, QTableWidgetItem("PUSH"))
+        # self.tb_Repos.setItem(0, 6, QTableWidgetItem("REMOTE REPO?"))
         header = self.tb_Repos.horizontalHeader()
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
@@ -236,5 +288,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         screens_available = QDesktopWidget().screenCount()
         primary_screen = QDesktopWidget().primaryScreen()
         monitor = QDesktopWidget().screenGeometry(selected_screen)
-        window.move(monitor.left(), monitor.top())
+        monitor_width = monitor.width()
+        monitor_height = monitor.height()
+        window_width = self.geometry().width()
+        window_height = self.geometry().height()
+        left = (monitor_width - window_width) / 2
+        top = (monitor_height - window_height) / 2
+        window.move(monitor.left() + left, monitor.top() + top)
         self.log.debug("Screens Available:{}  Primary Screen:{}".format(screens_available, primary_screen))
