@@ -45,11 +45,11 @@
        </rect>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="files">
        <attribute name="title">
-        <string>Files</string>
+        <string>PUSH</string>
        </attribute>
        <widget class="QTableWidget" name="tb_Repos">
         <property name="enabled">
@@ -134,14 +134,14 @@
        <widget class="QPushButton" name="pb_set_local_path">
         <property name="geometry">
          <rect>
-          <x>22</x>
+          <x>4</x>
           <y>16</y>
-          <width>123</width>
+          <width>155</width>
           <height>32</height>
          </rect>
         </property>
         <property name="text">
-         <string>Set Local Path</string>
+         <string>Set Local Push Path</string>
         </property>
        </widget>
        <widget class="QLabel" name="label">
@@ -157,7 +157,7 @@
          <string>TOKEN</string>
         </property>
        </widget>
-       <widget class="QTextEdit" name="te_local_path">
+       <widget class="QTextEdit" name="te_local_push_path">
         <property name="geometry">
          <rect>
           <x>166</x>
@@ -214,6 +214,60 @@
         </property>
         <property name="text">
          <string>Create GitLab Connection</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>PULL</string>
+       </attribute>
+       <widget class="QTextEdit" name="te_local_pull_path">
+        <property name="geometry">
+         <rect>
+          <x>172</x>
+          <y>38</y>
+          <width>323</width>
+          <height>27</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pb_set_local_pull_path">
+        <property name="geometry">
+         <rect>
+          <x>12</x>
+          <y>36</y>
+          <width>147</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Set Local Pull Path</string>
+        </property>
+       </widget>
+       <widget class="QTableWidget" name="tb_remote_Repos">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>8</x>
+          <y>80</y>
+          <width>1163</width>
+          <height>509</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pb_create_and_pull">
+        <property name="geometry">
+         <rect>
+          <x>936</x>
+          <y>40</y>
+          <width>200</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Create and Pull</string>
         </property>
        </widget>
       </widget>

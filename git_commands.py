@@ -208,8 +208,14 @@ class GitCommands(object):
                 return True, git_date
             elif err.find("does not have any commits yet") != -1:
                 return False, 'No commits'
+        except UnicodeDecodeError as error:
+            self.log.debug('Exception in Commit Check:{}'.format(error))
+            return True, "No commits"
         except Exception as error:
             self.log.debug('Exception in Commit Check:{}'.format(error))
+            return False, "ERROR"
+        else:
+            return False, "ERROR"
 
     def remote_check(self, path):
         os.chdir(path)
@@ -249,13 +255,11 @@ class GitCommands(object):
                 return False, 'No Repo'
             elif err.find('No remote repository specified') != -1:
                 return False, 'No Repo'
+            elif err.find('Could not read from remote repository') != -1:
+                return False, 'No Repo'
         except Exception as error:
-            err_str = error.args[0]
-            self.log.info("INIT Check error:{}".format(err_str))
-            if err_str.find("Repository not found") != -1:
-                return False, 'Not found'
-            else:
-                return False, 'Error'
+            self.log.info("INIT Check error:{}".format(error))
+            return False, 'ERROR'
 
     def config_check(self, path):
         self.log.debug("git  REPO CONFIG reader".format())
@@ -271,12 +275,8 @@ class GitCommands(object):
             else:
                 return False, 'None'
         except Exception as error:
-            err_str = error.args[0]
-            self.log.info("INIT Check error:{}".format(err_str))
-            if err_str.find("Repository not found") != -1:
-                return False, 'Not found'
-            else:
-                return False, 'Error'
+            self.log.info("INIT Check error:{}".format(error))
+            return False, 'Error'
 
     def show_error_message(self, msg):
         self.log.debug('Error message'.format(msg))

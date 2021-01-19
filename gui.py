@@ -57,7 +57,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.te_token.textChanged.connect(self.te_token_text_changed)
         self.pb_delete_selected_local_git.clicked.connect(self.pb_delete_selected_local_git_clicked)
         self.pb_delete_selected_remote_git.clicked.connect(self.pb_delete_selected_remote_git_clicked)
-        self.pb_set_local_path.clicked.connect(self.set_local_path_clicked)
+        self.pb_set_local_push_path.clicked.connect(self.set_local_path_clicked)
         self.pb_get_local_folders.clicked.connect(self.pb_get_local_folders_clicked)
         self.pb_create_and_push.clicked.connect(self.create_and_push)
         self.rb_siemens_url.toggled.connect(self.radio_button_pushed)
@@ -78,8 +78,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.log.debug("Local PATH clicked")
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.DirectoryOnly)
-        self.data.top_level_path = QFileDialog.getExistingDirectory(None, 'Set Directory', )
-        self.te_local_path.setText(str(self.data.top_level_path))
+        self.data.top_level_push_path = QFileDialog.getExistingDirectory(None, 'Set Directory', )
+        self.te_local_path.setText(str(self.data.top_level_push_path))
 
     def table_clicked(self, row, column):
         # FOLDER, INIT, ADD, COMMIT, SHOW, PUSH, REMOTE
@@ -134,6 +134,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.rb_siemens_url.isChecked():
             self.data.url = self.data.siemens_txt_url
             self.gui.te_token.setText(self.data.siemens_private_token)
+            self.gui.te_local_path.setText(self.data.top_level_push_path)
+            self.gui.te_local_pull_path.setText(self.data.top_level_pull_path)
             self.log.debug("Siemens URL selected")
         elif self.rb_gitlab_url.isChecked():
             self.data.url = self.data.gitlab_txt_url

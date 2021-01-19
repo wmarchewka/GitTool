@@ -17,18 +17,29 @@ class FolderCommands(object):
         self.main = main
 
     def get_folder_list(self):
+        res = ""
+        filename_lowercase_fixed = ""
         self.log.debug("Getting folder list")
-        top_level_path = self.data.top_level_path
+        top_level_path = self.data.top_level_push_path
         self.data.top_level_folders = []
         self.data.top_level_filenames = []
         if top_level_path is not None:
             filenames = os.listdir(top_level_path)
             for filename in filenames:  # loop through all the files and folders
+                filepath_orig = os.path.join(top_level_path, filename)
                 filename_lowercase = self.to_lowercase(filename)
-                full_path = os.path.join(top_level_path, filename_lowercase)
+                res = " " in filename_lowercase
+                if res:
+                    self.log.debug("Path contains spaces. removing.")
+                    filename_lowercase_fixed = filename_lowercase.replace(" ", "")
+                    filepath_new = os.path.join(top_level_path, filename_lowercase_fixed)
+                    os.rename(filepath_orig, filepath_new)
+                else:
+                    filename_lowercase_fixed = filename_lowercase
+                full_path = os.path.join(top_level_path, filename_lowercase_fixed)
                 if os.path.isdir(full_path):
                     self.data.top_level_folders.append(full_path)
-                    self.data.top_level_filenames.append(filename_lowercase)
+                    self.data.top_level_filenames.append(filename_lowercase_fixed)
             self.data.top_level_folders.sort()
             self.data.top_level_filenames.sort()
         else:
@@ -52,9 +63,6 @@ class FolderCommands(object):
         self.remote_check(row)
         self.push_check(row)
         self.repo_check(row)
-
-    # def config_check(self, row_counter):
-    #     msg = self.main.gitCommands.config_check(self.data.top_level_folders[row_counter - 1])
 
     def init_check(self, row_counter):
         self.log.debug("INIT check")

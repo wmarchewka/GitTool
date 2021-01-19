@@ -10,32 +10,37 @@ class GitLabCommands(object):
         self.main = main
         self.folder_commands = folder_commands
         self.data = data
+        self.connection_made = False
         self.gitlab_connection = None
 
     def create_connection(self):
-        url = self.data.url
-        url = self.data.gitlab_api_url
-        private_token = self.data.token
-        if url is not None and private_token is not None:
-            self.log.info("Creating connection")
-            try:
-                self.gitlab_connection = gitlab.Gitlab(url, private_token='{}'.format(private_token))
-                self.log.info("Setting url:{}".format(url))
-            except Exception as e:
-                self.log.critical("Exception creating GITLAB connection:{}".format(e))
-                self.show_error_message("Error Creating Connection")
-                return False
+        if self.connection_made is not True:
+            url = self.data.url
+            url = self.data.gitlab_api_url
+            private_token = self.data.token
+            if url is not None and private_token is not None:
+                self.log.info("Creating connection")
+                try:
+                    self.gitlab_connection = gitlab.Gitlab(url, private_token='{}'.format(private_token))
+                    self.log.info("Setting url:{}".format(url))
+                except Exception as e:
+                    self.log.critical("Exception creating GITLAB connection:{}".format(e))
+                    self.show_error_message("Error Creating Connection")
+                    self.connection_made = False
+                    return False
+                else:
+                    self.log.info("Successfully created connection")
+                    self.connection_made = True
+                    return True
             else:
-                self.log.info("Successfully created connection")
-                return True
-        else:
-            msg = ""
-            if url is None:
-                msg = "Url is blank"
-            if private_token is None:
-                msg = msg + '\r\n' + "Token is blank"
-            self.show_error_message(msg)
-            return False
+                msg = ""
+                if url is None:
+                    msg = "Url is blank"
+                if private_token is None:
+                    msg = msg + '\r\n' + "Token is blank"
+                self.show_error_message(msg)
+                return False
+        return True
 
     def create_connection_pressed(self):
         pass

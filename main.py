@@ -45,7 +45,6 @@ class BteTools(object):
         self.gui.rb_siemens_url.setText(self.data.siemens_txt_url)
         self.gui.rb_gitlab_url.setText(self.data.gitlab_txt_url)
         self.gui.rb_gitlab_url.setChecked(True)
-        self.gui.te_local_path.setText(self.data.top_level_path)
 
     def get_env_variable(self, variable):
         # env_var = os.environ.get(variable)

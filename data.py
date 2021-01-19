@@ -5,7 +5,8 @@ from PySide2 import QtGui
 class Data(object):
     def __init__(self):
         self.log = Logger().log
-        self.top_level_path = '/Users/waltermarchewka/Desktop/GITLAB'
+        self.top_level_push_path = '/Users/waltermarchewka/Desktop/GITLAB'
+        self.top_level_pull_path = '/Users/waltermarchewka/Desktop/GITLAB_TEST'
         self.siemens_txt_url = 'git@code.siemens.com:siemensbte/drivers/'
         self.gitlab_txt_url = 'git@gitlab.com:siemensbte/drivers/'
         self.gitlab_api_url = 'https://gitlab.com/'
