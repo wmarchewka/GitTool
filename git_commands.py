@@ -243,6 +243,7 @@ class GitCommands(object):
             self.log.debug("PUSH CHECK result:{}".format(result))
             err = result.stderr
             out = result.stdout
+            return_code = result.returncode
             # noinspection PyTypeChecker
             if err.find(
                     "The project you were looking for could not be found") != -1:  # returns position in string where found
@@ -257,6 +258,8 @@ class GitCommands(object):
                 return False, 'No Repo'
             elif err.find('Could not read from remote repository') != -1:
                 return False, 'No Repo'
+            elif return_code == 0:
+                return True, 'Up to date'
         except Exception as error:
             self.log.info("INIT Check error:{}".format(error))
             return False, 'ERROR'

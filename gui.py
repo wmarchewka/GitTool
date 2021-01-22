@@ -57,7 +57,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.te_token.textChanged.connect(self.te_token_text_changed)
         self.pb_delete_selected_local_git.clicked.connect(self.pb_delete_selected_local_git_clicked)
         self.pb_delete_selected_remote_git.clicked.connect(self.pb_delete_selected_remote_git_clicked)
-        self.pb_set_local_push_path.clicked.connect(self.set_local_path_clicked)
+        # self.pb_set_local_push_path.clicked.connect(self.set_local_path_clicked)
         self.pb_get_local_folders.clicked.connect(self.pb_get_local_folders_clicked)
         self.pb_create_and_push.clicked.connect(self.create_and_push)
         self.rb_siemens_url.toggled.connect(self.radio_button_pushed)
