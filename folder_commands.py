@@ -16,6 +16,18 @@ class FolderCommands(object):
         self.data = data
         self.main = main
 
+    def get_remote_repos(self):
+        self.data.remote_repos = []
+        row = 0
+        remote_repos = self.main.gitLabCommands.get_projects_list()
+        for project in remote_repos:
+            remote_name = project.name
+            remote_id = project.id
+            self.gui.table_remote_repos_set_item_text(row, 0, str(remote_name))
+            self.gui.table_remote_repos_set_item_text(row, 1, str(remote_id))
+            self.data.remote_repos.append(project)
+            row = row + 1
+
     def get_folder_list(self):
         res = ""
         filename_lowercase_fixed = ""
@@ -123,17 +135,30 @@ class FolderCommands(object):
             self.gui.table_set_item_text(row, 6, str(msg))
             self.gui.table_set_item_background(row, 6, 'red')
 
+    def add_folders_from_remote(self, rows):
+        for row_counter in rows:
+            project = self.data.remote_repos[row_counter]
+            result, msg = self.main.gitCommands.create_subtree(project=project)
+            if result:
+                self.gui.table_remote_repos_set_item_text(row_counter, 3, str(msg))
+                self.gui.table_remote_repos_set_item_background(row_counter, 3, 'green')
+            else:
+                self.gui.table_remote_repos_set_item_text(row_counter, 3, str(msg))
+                self.gui.table_remote_repos_set_item_background(row_counter, 3, 'red')
+
     def add_folder_to_remote(self, rows):
         for row_counter in rows:
+            name = self.data.top_level_folders(row_counter)
             folder = self.data.top_level_folders[row_counter]
             filename = self.data.top_level_filenames[row_counter]
             self.log.debug("Add folder {} to remote".format(folder))
             self.log.debug("Folder:{}".format(folder))
-            self.main.gitCommands.init(path=folder, row=row_counter)
-            self.main.gitCommands.add(path=folder, row=row_counter)
-            self.main.gitCommands.commit(path=folder, row=row_counter)
-            self.main.gitCommands.remote(path=folder, row=row_counter)
-            self.main.gitCommands.push(path=folder, row=row_counter)
+            self.main.gitCommands.init(path=folder)
+            self.main.gitCommands.add(path=folder)
+            self.main.gitCommands.commit(path=folder)
+            url = self.data.url + name + '.git'
+            self.main.gitCommands.remote(path=folder, name=name, url=url)
+            self.main.gitCommands.push(path=folder)
             self.check_one_folder(row=row_counter, filename=filename)
 
     def pathname_to_filename(self, path):

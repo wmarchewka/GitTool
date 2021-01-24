@@ -16,8 +16,8 @@ class GitCommands(object):
         self.folder_commands = folder_commands
         self.data = data
 
-    def init(self, path, row):
-        self.log.debug("git INIT  PATH:{}   ROW:{}".format(path, row))
+    def init(self, path):
+        self.log.debug("git INIT  PATH:{}".format(path))
         os.chdir(path)
         try:
             result = subprocess.run(['git', 'init'], capture_output=True, text=True)
@@ -41,8 +41,8 @@ class GitCommands(object):
             else:
                 return False, 'Error'
 
-    def add(self, path, row):
-        self.log.debug("git ADD  PATH:{}   ROW:{}".format(path, row))
+    def add(self, path):
+        self.log.debug("git ADD  PATH:{}".format(path))
         os.chdir(path)
         try:
             result = subprocess.run(['git', 'add', '.'], capture_output=True, text=True)
@@ -62,8 +62,8 @@ class GitCommands(object):
             else:
                 return False, 'Error'
 
-    def commit(self, path, row):
-        self.log.debug("git COMMIT  PATH:{}   ROW:{}".format(path, row))
+    def commit(self, path):
+        self.log.debug("git COMMIT  PATH:{}".format(path))
         os.chdir(path)
         try:
             result = subprocess.run(['git', 'commit', '-m', 'Initial commit'], capture_output=True, text=True)
@@ -86,13 +86,11 @@ class GitCommands(object):
             else:
                 return False, 'Error'
 
-    def remote(self, path, row):
-        self.log.debug("git REMOTE CREATE  PATH:{}   ROW:{}".format(path, row))
+    def remote(self, path, name, url):
+        self.log.debug("git REMOTE CREATE  PATH:{}".format(path))
         os.chdir(path)
         try:
             # git remote add origin https://github.com/user/repo.git
-            name = self.main.folderCommands.pathname_to_filename(path)
-            url = self.data.url + name + '.git'
             result = subprocess.run(['git', 'remote', 'add', 'origin', url], capture_output=True, text=True)
             self.log.debug("COMMIT:{}".format(result))
             err = result.stderr
@@ -114,12 +112,12 @@ class GitCommands(object):
             else:
                 return False, 'Error'
 
-    def push(self, path, row):
-        self.log.debug("git REMOTE CREATE  PATH:{}   ROW:{}".format(path, row))
+    def push(self, path):
+        self.log.debug("git PUSH:{}".format(path))
         os.chdir(path)
         try:
             # git push 111 master
-            name = self.main.folderCommands.pathname_to_filename(path)
+            # name = self.main.folderCommands.pathname_to_filename(path)
             result = subprocess.run(['git', 'push', '--set-upstream', 'origin', 'master'], capture_output=True,
                                     text=True)
             self.log.debug("PUSH:{}".format(result))
@@ -348,3 +346,39 @@ class GitCommands(object):
                 return False, 'Not found'
             else:
                 return False, 'Error'
+
+    def create_subtree(self, project):
+        # git subtree add --prefix 111/ git@gitlab.com:siemensbte/drivers/111.git master --squash
+        #
+        value = ""
+        top_level_pull_path = self.data.top_level_pull_path
+        folder_for_subtree = project.name
+        remote_url = self.data.url
+        remote_project_name = project.name + '.git'
+        remote_project = os.path.join(remote_url, remote_project_name)
+        new_path = os.path.join(top_level_pull_path, folder_for_subtree)
+        os.chdir(top_level_pull_path)
+        result = subprocess.run(
+            ['git', 'subtree', 'add', '--prefix', folder_for_subtree, remote_project, 'master', '--squash'],
+            capture_output=True, text=True)
+        self.log.debug("init check result:{}".format(result))
+        err = result.stderr
+        out = result.stdout
+        return_code = result.returncode
+
+        self.log.debug("INIT:{}  ERROR:{}".format(out, err))
+        # noinspection PyTypeChecker
+        if err.find("no common commits") != -1:
+            value = "SUCCESS : "
+            return True, new_path
+        elif return_code == 0:
+            value = "SUCCESS : "
+            return True, new_path
+        else:
+            return False, "ERROR"
+
+    def create_readme(self, path):
+        os.chdir(path)
+        f = open("READ.me", "x")
+        f.write("README")
+        f.close()

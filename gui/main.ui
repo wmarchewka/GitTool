@@ -45,7 +45,7 @@
        </rect>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="files">
        <attribute name="title">
@@ -131,17 +131,17 @@
        <attribute name="title">
         <string>Setup</string>
        </attribute>
-       <widget class="QPushButton" name="pb_set_local_path">
-        <property name="geometry">
-         <rect>
-          <x>4</x>
-          <y>16</y>
-          <width>155</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Set Local Push Path</string>
+          <widget class="QPushButton" name="pb_set_local_push_path">
+              <property name="geometry">
+                  <rect>
+                      <x>4</x>
+                      <y>16</y>
+                      <width>155</width>
+                      <height>32</height>
+                  </rect>
+              </property>
+              <property name="text">
+                  <string>Set Local Push Path</string>
         </property>
        </widget>
        <widget class="QLabel" name="label">
@@ -258,18 +258,41 @@
         </property>
        </widget>
        <widget class="QPushButton" name="pb_create_and_pull">
-        <property name="geometry">
-         <rect>
-          <x>936</x>
-          <y>40</y>
-          <width>200</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Create and Pull</string>
-        </property>
+           <property name="geometry">
+               <rect>
+                   <x>8</x>
+                   <y>2</y>
+                   <width>147</width>
+                   <height>32</height>
+               </rect>
+           </property>
+           <property name="text">
+               <string>Create and Pull</string>
+           </property>
        </widget>
+          <widget class="QPushButton" name="pb_create_local_project">
+              <property name="geometry">
+                  <rect>
+                      <x>794</x>
+                      <y>18</y>
+                      <width>151</width>
+                      <height>32</height>
+                  </rect>
+              </property>
+              <property name="text">
+                  <string>Create local project</string>
+              </property>
+          </widget>
+          <widget class="QTextEdit" name="te_project_name">
+              <property name="geometry">
+                  <rect>
+                      <x>800</x>
+                      <y>52</y>
+                      <width>363</width>
+                      <height>23</height>
+                  </rect>
+              </property>
+          </widget>
       </widget>
      </widget>
     </widget>

@@ -16,13 +16,14 @@ Ui_MainWindow, QtBaseClass = QtUiTools.loadUiType(qtCreatorFile)
 
 class MainWindow(QMainWindow, Ui_MainWindow):
 
-    def __init__(self, main, data):
+    def __init__(self, main, data, config):
         super(MainWindow, self).__init__()
         self.selected_item = None
         self.setupUi(self)
         self.logger = Logger()
         self.main = main
         self.data = data
+        self.config = config
         self.log = self.logger.log
         self.log.debug('{} initializing....'.format(__name__))
         self.startup_processes()
@@ -45,6 +46,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.load_screen()
         self.table_setup()
         self.screen_setup()
+        self.load_from_config()
+
+    def load_from_config(self):
+        self.data.top_level_push_path = self.config.read_key('PATHS', 'local_push_path')
+        self.data.top_level_pull_path = self.config.read_key('PATHS', 'local_pull_path')
+        self.te_local_push_path.setText(str(self.data.top_level_push_path))
+        self.te_local_pull_path.setText(str(self.data.top_level_pull_path))
 
     def signals_and_slots(self):
         """creates all signals and slots
@@ -54,17 +62,68 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tb_Repos.cellClicked.connect(self.table_clicked)
         self.tb_Repos.horizontalHeader().sectionClicked.connect(self.horizontal_header_clicked)
         self.tb_Repos.verticalHeader().sectionClicked.connect(self.vertical_header_clicked)
+        self.tb_remote_Repos.verticalHeader().sectionClicked.connect(self.remote_repos_vertical_header_clicked)
         self.te_token.textChanged.connect(self.te_token_text_changed)
         self.pb_delete_selected_local_git.clicked.connect(self.pb_delete_selected_local_git_clicked)
         self.pb_delete_selected_remote_git.clicked.connect(self.pb_delete_selected_remote_git_clicked)
-        # self.pb_set_local_push_path.clicked.connect(self.set_local_path_clicked)
+        self.pb_set_local_push_path.clicked.connect(self.set_local_push_path_clicked)
+        self.pb_set_local_pull_path.clicked.connect(self.set_local_pull_path_clicked)
         self.pb_get_local_folders.clicked.connect(self.pb_get_local_folders_clicked)
         self.pb_create_and_push.clicked.connect(self.create_and_push)
+        self.pb_create_and_pull.clicked.connect(self.create_and_pull)
         self.rb_siemens_url.toggled.connect(self.radio_button_pushed)
         self.rb_gitlab_url.toggled.connect(self.radio_button_pushed)
+        self.tabWidget.currentChanged.connect(self.tab_changed)
+        self.pb_create_local_project.clicked.connect(self.create_local_project)
+
         # self.pb_delete_all_git_local.clicked.connect(self.pb_delete_all_git_local_clicked)
         # self.pb_create_connection.clicked.connect(self.pb_create_connection_clicked)
         # self.pb_add_all_to_remote.clicked.connect(self.pb_add_all_to_remote_clicked)
+
+    def create_local_project(self):
+        create_project_name = self.te_project_name.toPlainText()
+        create_project_name = create_project_name.lower()
+        if create_project_name is not "":
+            repo_projects = self.main.gitLabCommands.get_projects_list()
+            self.log.debug("Repo Projects:{}".format(repo_projects))
+            self.log.debug("Create Local project clicked")
+            dialog = QFileDialog()
+            dialog.setFileMode(QFileDialog.DirectoryOnly)
+            create_local_path = QFileDialog.getExistingDirectory(None, 'Set Directory', )
+            new_create_local_path = os.path.join(create_local_path, create_project_name)
+            if create_local_path is not '':
+                self.te_project_name.setText(new_create_local_path)
+                os.mkdir(new_create_local_path)
+                self.main.gitCommands.init(new_create_local_path)
+                self.main.gitCommands.create_readme(new_create_local_path)
+                self.main.gitCommands.add(new_create_local_path)
+                self.main.gitCommands.commit(new_create_local_path)
+                url = 'git@gitlab.com:siemensbte/customerprojects/' + create_project_name + '.git'
+                self.main.gitCommands.remote(path=new_create_local_path, name=create_project_name, url=url)
+                self.main.gitCommands.push(new_create_local_path)
+            else:
+                self.log.debug("No project name")
+        else:
+            self.log.debug("No project name")
+
+    def tab_changed(self, index):
+        self.log.debug("Index:{}".format(index))
+        # self.tabWidget.setCurrentWidget(index)
+        if index == 0:
+            self.log.debug("PUSH TAB selected")
+        elif index == 1:
+            self.log.debug("SETUP TAB selected")
+        elif index == 2:
+            self.log.debug("PULL TAB selected")
+            self.main.folderCommands.get_remote_repos()
+
+    def create_and_pull(self):
+        self.log.debug('Create and pull')
+        rows = self.remote_repos_vertical_selection
+        # create_and_pull_thread = threading.Thread(target=self.main.folderCommands.add_folders_from_remote, args=(rows,))
+        # create_and_pull_thread.start()
+        self.main.folderCommands.add_folders_from_remote(rows=rows)
+        self.tb_Repos.clearSelection()
 
     def create_and_push(self):
         self.log.debug('Create and push')
@@ -74,12 +133,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # self.main.folderCommands.add_folder_to_remote(rows=rows)
         self.tb_Repos.clearSelection()
 
-    def set_local_path_clicked(self):
-        self.log.debug("Local PATH clicked")
+    def set_local_pull_path_clicked(self):
+        self.log.debug("Local PULL PATH clicked")
+        dialog = QFileDialog()
+        dialog.setFileMode(QFileDialog.DirectoryOnly)
+        self.data.top_level_pull_path = QFileDialog.getExistingDirectory(None, 'Set Directory', )
+        if self.data.top_level_pull_path is not '':
+            self.te_local_pull_path.setText(str(self.data.top_level_pull_path))
+            self.config.write_key('PATHS', 'local_pull_path', str(self.data.top_level_pull_path))
+            self.config.save_file()
+
+    def set_local_push_path_clicked(self):
+        self.log.debug("Local PUSH PATH clicked")
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.DirectoryOnly)
         self.data.top_level_push_path = QFileDialog.getExistingDirectory(None, 'Set Directory', )
-        self.te_local_path.setText(str(self.data.top_level_push_path))
+        if self.data.top_level_push_path is not '':
+            self.te_local_push_path.setText(str(self.data.top_level_push_path))
+            self.config.write_key('PATHS', 'local_push_path', str(self.data.top_level_push_path))
+            self.config.save_file()
 
     def table_clicked(self, row, column):
         # FOLDER, INIT, ADD, COMMIT, SHOW, PUSH, REMOTE
@@ -98,7 +170,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.main.gitCommands.commit(path=self.data.top_level_folders[row - 1], row=row - 1)
                 self.main.folderCommands.commit_check(row)
             if column == 4:  # remote
-                self.main.gitCommands.remote(path=self.data.top_level_folders[row - 1], row=row - 1)
+                name = self.main.folderCommands.pathname_to_filename(path=self.data.top_level_folders[row - 1])
+                url = self.data.url + '.git'
+                self.main.gitCommands.remote(path=self.data.top_level_folders[row - 1], name=name, url=url)
                 self.main.folderCommands.remote_check(row)
             if column == 5:  # push
                 self.main.gitCommands.push(path=self.data.top_level_folders[row - 1], row=row - 1)
@@ -122,6 +196,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.log.debug('Row %d is selected' % index.row())
                 self.vertical_selection.append(index.row())
             self.log.debug("Vertical selection:{}".format(self.vertical_selection))
+
+    def remote_repos_vertical_header_clicked(self, index):
+        if self.remote_repos_check_data_exists(index):
+            self.remote_repos_vertical_row_selected = index
+            self.remote_repos_vertical_selection = []
+            indexes = self.tb_remote_Repos.selectionModel().selectedRows()
+            for index in sorted(indexes):
+                self.log.debug('Row %d is selected' % index.row())
+                self.remote_repos_vertical_selection.append(index.row())
+            self.log.debug("Vertical selection:{}".format(self.remote_repos_vertical_selection))
 
     def te_token_text_changed(self):
         self.data.token = self.te_token.toPlainText()
@@ -166,6 +250,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.log.debug("check if data exists")
         try:
             if self.data.top_level_folders[row - 1]:
+                result = True
+            else:
+                result = False
+        except IndexError as error:
+            self.log.debug("check data exists ERROR:{}".format(error))
+            result = False
+        else:
+            result = True
+        return result
+
+    def remote_repos_check_data_exists(self, row):
+        self.log.debug("check if data exists")
+        try:
+            if self.data.remote_repos[row - 1]:
                 result = True
             else:
                 result = False
@@ -224,14 +322,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.log.debug("screen setup")
         self.tabWidget.setCurrentWidget(self.tabWidget.findChild(QWidget, 'files'))
         self.rb_gitlab_url.setChecked(True)
+        self.te_project_name.setText("MNR")
 
     def table_setup(self):
         self.log.debug("Table Names Setup")
-        self.tb_Repos = self.tb_Repos
+        # self.tb_Repos = self.tb_Repos
         self.tb_Repos.setRowCount(200)
+        self.tb_remote_Repos.setRowCount(200)
         self.tb_Repos.setColumnCount(7)
+        self.tb_remote_Repos.setColumnCount(7)
         self.tb_Repos.setHorizontalHeaderLabels(
             ['REPO NAME', 'INIT', 'ADD', 'COMMIT', 'REMOTE', 'PUSH', 'REMOTE', 'REPO?'])
+        self.tb_remote_Repos.setHorizontalHeaderLabels(
+            ['REPO NAME', 'ID'])
         # self.tb_Repos.horizontalHeaderItem().setTextAlignment(QtCore.Qt.AlignHCenter)
         # self.tb_Repos.setItem(0, 0, QTableWidgetItem("FOLDER"))
         # self.tb_Repos.setItem(0, 1, QTableWidgetItem("INIT"))
@@ -241,6 +344,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # self.tb_Repos.setItem(0, 5, QTableWidgetItem("PUSH"))
         # self.tb_Repos.setItem(0, 6, QTableWidgetItem("REMOTE REPO?"))
         header = self.tb_Repos.horizontalHeader()
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(4, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(5, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(6, QtWidgets.QHeaderView.ResizeToContents)
+        header = self.tb_remote_Repos.horizontalHeader()
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
@@ -281,6 +392,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             background_color = self.data.color_red
         # self.tb_Repos.item(row, column).setBackground(background_color)
         self.tb_Repos.item(row, column).setBackground(background_color)
+
+    def table_remote_repos_set_item_text(self, row, column, text):
+        self.tb_remote_Repos.setItem(row, column, QTableWidgetItem(text))
+
+    def table_remote_repos_set_item_background(self, row, column, color):
+        background_color = None
+        if color == 'green':
+            background_color = self.data.color_green
+        if color == 'red':
+            background_color = self.data.color_red
+        # self.tb_Repos.item(row, column).setBackground(background_color)
+        self.tb_remote_Repos.item(row, column).setBackground(background_color)
 
     def monitor_set(self, selected_screen, window):
         """creates list of available monitors and moves window to

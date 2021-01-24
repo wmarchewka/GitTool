@@ -8,6 +8,7 @@ from git_commands import GitCommands
 from gitlab_commands import GitLabCommands
 from folder_commands import FolderCommands
 from data import Data
+from config import Config
 import threading
 
 class BteTools(object):
@@ -16,7 +17,8 @@ class BteTools(object):
         # os_name = platform.system()
         self.log = self.logger.log
         self.data = Data()
-        self.gui = MainWindow(main=self, data=self.data)
+        self.config = Config()
+        self.gui = MainWindow(main=self, data=self.data, config=self.config)
         self.folderCommands = FolderCommands(main=self, gui=self.gui, data=self.data)
         self.gitCommands = GitCommands(main=self, gui=self.gui, folder_commands=self.folderCommands, data=self.data)
         self.gitLabCommands = GitLabCommands(main=self, gui=self.gui, folder_commands=self.folderCommands,

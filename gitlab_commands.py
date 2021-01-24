@@ -126,6 +126,11 @@ class GitLabCommands(object):
                     value = "NO"
                 self.gui.set_item_text(row_counter, 6, value)
 
+    def get_projects_list(self):
+        self.create_connection()
+        remote_projects = self.gitlab_connection.projects.list(owned=True)
+        return remote_projects
+
     def delete_remote_repository(self, repository_name):
         self.log.info("Deleting:{}".format(repository_name))
 
