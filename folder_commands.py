@@ -148,7 +148,7 @@ class FolderCommands(object):
 
     def add_folder_to_remote(self, rows):
         for row_counter in rows:
-            name = self.data.top_level_folders(row_counter)
+            name = self.data.top_level_folders[row_counter]
             folder = self.data.top_level_folders[row_counter]
             filename = self.data.top_level_filenames[row_counter]
             self.log.debug("Add folder {} to remote".format(folder))
@@ -156,8 +156,8 @@ class FolderCommands(object):
             self.main.gitCommands.init(path=folder)
             self.main.gitCommands.add(path=folder)
             self.main.gitCommands.commit(path=folder)
-            url = self.data.url + name + '.git'
-            self.main.gitCommands.remote(path=folder, name=name, url=url)
+            url = self.data.url + filename + '.git'
+            self.main.gitCommands.remote(path=folder, name=filename, url=url)
             self.main.gitCommands.push(path=folder)
             self.check_one_folder(row=row_counter, filename=filename)
 
