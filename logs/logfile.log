@@ -2048,3 +2048,62 @@ Added dir '111'
 2021-01-24 15:20:21.500 - logger - DEBUG     - Module:gui                             Function:remote_repos_vertical_header_clicked  Line Number:207      - Row 5 is selected
 2021-01-24 15:20:21.501 - logger - DEBUG     - Module:gui                             Function:remote_repos_vertical_header_clicked  Line Number:209      - Vertical selection:[5]
 2021-01-24 16:07:34.940 - logger - DEBUG     - Module:gui                             Function:closeEvent                      Line Number:318      - Close Event
+2021-01-24 19:11:31.788 - logger - INFO      - Module:logger                          Function:__init__                        Line Number:33       - logger INITIALIZING....
+2021-01-24 19:11:31.789 - logger - INFO      - Module:logger                          Function:__init__                        Line Number:34       - LOG LEVEL 10
+2021-01-24 19:11:31.792 - logger - INFO      - Module:logger                          Function:__init__                        Line Number:35       - logger init complete...
+2021-01-24 19:11:31.793 - logger - DEBUG     - Module:config                          Function:read_key                        Line Number:27       - value:1.0
+2021-01-24 19:11:31.967 - logger - DEBUG     - Module:gui                             Function:__init__                        Line Number:28       - gui initializing....
+2021-01-24 19:11:31.967 - logger - DEBUG     - Module:gui                             Function:startup_processes               Line Number:43       - startup processes
+2021-01-24 19:11:31.967 - logger - DEBUG     - Module:gui                             Function:signals_and_slots               Line Number:61       - GUI create signals and slots
+2021-01-24 19:11:31.968 - logger - DEBUG     - Module:gui                             Function:menu_create                     Line Number:284      - creating menus
+2021-01-24 19:11:31.973 - logger - DEBUG     - Module:gui                             Function:load_screen                     Line Number:36       - Loading screen gui/main.ui
+2021-01-24 19:11:32.056 - logger - DEBUG     - Module:gui                             Function:monitor_set                     Line Number:423      - Screens Available:3  Primary Screen:0
+2021-01-24 19:11:32.056 - logger - DEBUG     - Module:gui                             Function:table_setup                     Line Number:328      - Table Names Setup
+2021-01-24 19:11:32.071 - logger - DEBUG     - Module:gui                             Function:screen_setup                    Line Number:322      - screen setup
+2021-01-24 19:11:32.091 - logger - DEBUG     - Module:gui                             Function:tab_changed                     Line Number:110      - Index:0
+2021-01-24 19:11:32.091 - logger - DEBUG     - Module:gui                             Function:tab_changed                     Line Number:113      - PUSH TAB selected
+2021-01-24 19:11:32.091 - logger - DEBUG     - Module:gui                             Function:radio_button_pushed             Line Number:217      - Radio Button pushed
+2021-01-24 19:11:32.091 - logger - DEBUG     - Module:gui                             Function:radio_button_pushed             Line Number:227      - GITLAB URL selected
+2021-01-24 19:11:32.092 - logger - DEBUG     - Module:config                          Function:read_key                        Line Number:27       - value:/Users/waltermarchewka/Desktop/GITLAB
+2021-01-24 19:11:32.092 - logger - DEBUG     - Module:config                          Function:read_key                        Line Number:27       - value:/Users/waltermarchewka/Desktop/BTE_TEST/MNR
+2021-01-24 19:11:32.092 - logger - DEBUG     - Module:gui                             Function:__init__                        Line Number:30       - gui init complete...
+2021-01-24 19:11:32.093 - logger - INFO      - Module:main                            Function:startup_actions                 Line Number:29       - Startup actions
+2021-01-24 19:11:37.540 - logger - DEBUG     - Module:gui                             Function:tab_changed                     Line Number:110      - Index:1
+2021-01-24 19:11:37.540 - logger - DEBUG     - Module:gui                             Function:tab_changed                     Line Number:115      - SETUP TAB selected
+2021-01-24 19:11:38.804 - logger - DEBUG     - Module:gui                             Function:set_local_push_path_clicked     Line Number:147      - Local PUSH PATH clicked
+2021-01-24 19:11:44.387 - logger - DEBUG     - Module:gui                             Function:closeEvent                      Line Number:317      - Close Event
+2021-01-24 19:14:42.373 - logger - INFO      - Module:logger                          Function:__init__                        Line Number:33       - logger INITIALIZING....
+2021-01-24 19:14:42.375 - logger - INFO      - Module:logger                          Function:__init__                        Line Number:34       - LOG LEVEL 10
+2021-01-24 19:14:42.375 - logger - INFO      - Module:logger                          Function:__init__                        Line Number:35       - logger init complete...
+2021-01-24 19:14:42.376 - logger - DEBUG     - Module:config                          Function:read_key                        Line Number:27       - value:1.0
+2021-01-24 19:14:42.529 - logger - DEBUG     - Module:gui                             Function:__init__                        Line Number:28       - gui initializing....
+2021-01-24 19:14:42.530 - logger - DEBUG     - Module:gui                             Function:startup_processes               Line Number:43       - startup processes
+2021-01-24 19:14:42.530 - logger - DEBUG     - Module:gui                             Function:signals_and_slots               Line Number:61       - GUI create signals and slots
+2021-01-24 19:14:42.531 - logger - DEBUG     - Module:gui                             Function:menu_create                     Line Number:284      - creating menus
+2021-01-24 19:14:42.534 - logger - DEBUG     - Module:gui                             Function:load_screen                     Line Number:36       - Loading screen gui/main.ui
+2021-01-24 19:14:42.608 - logger - DEBUG     - Module:gui                             Function:monitor_set                     Line Number:423      - Screens Available:3  Primary Screen:0
+2021-01-24 19:14:42.608 - logger - DEBUG     - Module:gui                             Function:table_setup                     Line Number:328      - Table Names Setup
+2021-01-24 19:14:42.624 - logger - DEBUG     - Module:gui                             Function:screen_setup                    Line Number:322      - screen setup
+2021-01-24 19:14:42.645 - logger - DEBUG     - Module:gui                             Function:tab_changed                     Line Number:110      - Index:0
+2021-01-24 19:14:42.645 - logger - DEBUG     - Module:gui                             Function:tab_changed                     Line Number:113      - PUSH TAB selected
+2021-01-24 19:14:42.646 - logger - DEBUG     - Module:gui                             Function:radio_button_pushed             Line Number:217      - Radio Button pushed
+2021-01-24 19:14:42.646 - logger - DEBUG     - Module:gui                             Function:radio_button_pushed             Line Number:227      - GITLAB URL selected
+2021-01-24 19:14:42.647 - logger - DEBUG     - Module:config                          Function:read_key                        Line Number:27       - value:/Users/waltermarchewka/Desktop/GITLAB
+2021-01-24 19:14:42.647 - logger - DEBUG     - Module:config                          Function:read_key                        Line Number:27       - value:/Users/waltermarchewka/Desktop/BTE_TEST/MNR
+2021-01-24 19:14:42.647 - logger - DEBUG     - Module:gui                             Function:__init__                        Line Number:30       - gui init complete...
+2021-01-24 19:14:42.648 - logger - INFO      - Module:main                            Function:startup_actions                 Line Number:29       - Startup actions
+2021-01-24 19:14:46.319 - logger - DEBUG     - Module:gui                             Function:tab_changed                     Line Number:110      - Index:1
+2021-01-24 19:14:46.319 - logger - DEBUG     - Module:gui                             Function:tab_changed                     Line Number:115      - SETUP TAB selected
+2021-01-24 19:14:47.280 - logger - DEBUG     - Module:gui                             Function:tab_changed                     Line Number:110      - Index:2
+2021-01-24 19:14:47.281 - logger - DEBUG     - Module:gui                             Function:tab_changed                     Line Number:117      - PULL TAB selected
+2021-01-24 19:14:47.281 - logger - INFO      - Module:gitlab_commands                 Function:create_connection               Line Number:22       - Creating connection
+2021-01-24 19:14:47.356 - logger - INFO      - Module:gitlab_commands                 Function:create_connection               Line Number:25       - Setting url:https://gitlab.com/
+2021-01-24 19:14:47.356 - logger - INFO      - Module:gitlab_commands                 Function:create_connection               Line Number:32       - Successfully created connection
+2021-01-24 19:14:48.358 - logger - DEBUG     - Module:gui                             Function:tab_changed                     Line Number:110      - Index:1
+2021-01-24 19:14:48.359 - logger - DEBUG     - Module:gui                             Function:tab_changed                     Line Number:115      - SETUP TAB selected
+2021-01-24 19:14:48.850 - logger - DEBUG     - Module:gui                             Function:tab_changed                     Line Number:110      - Index:0
+2021-01-24 19:14:48.850 - logger - DEBUG     - Module:gui                             Function:tab_changed                     Line Number:113      - PUSH TAB selected
+2021-01-24 19:14:53.086 - logger - DEBUG     - Module:gui                             Function:tab_changed                     Line Number:110      - Index:1
+2021-01-24 19:14:53.087 - logger - DEBUG     - Module:gui                             Function:tab_changed                     Line Number:115      - SETUP TAB selected
+2021-01-24 19:14:57.376 - logger - DEBUG     - Module:gui                             Function:set_local_push_path_clicked     Line Number:147      - Local PUSH PATH clicked
+2021-01-24 19:15:02.224 - logger - DEBUG     - Module:gui                             Function:closeEvent                      Line Number:317      - Close Event
