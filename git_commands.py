@@ -22,21 +22,21 @@ class GitCommands(object):
         try:
             result = subprocess.run(['git', 'init'], capture_output=True, text=True)
             self.log.debug("init check result:{}".format(result))
-            err = result.stderr
-            out = result.stdout
+            err = result.stderr.lower()
+            out = result.stdout.lower()
             # noinspection PyTypeChecker
-            if err.find("Not a git repository") != -1:  # returns position in string where found
+            if err.find("not a git repository") != -1:  # returns position in string where found
                 return False, 'None'
-            elif out.find("Reinitialized existing Git repository") != -1:
+            elif out.find("reinitialized existing git repository") != -1:
                 return True, 'Success'
-            elif out.find('reenitialized empty Git repository') != -1:
+            elif out.find('reenitialized empty git repository') != -1:
                 return True, 'Success'
-            elif out.find('Initialized empty Git repository') != -1:
+            elif out.find('initialized empty git repository') != -1:
                 return True, 'Success'
         except Exception as error:
             err_str = error.args[0]
             self.log.info("INIT Check error:{}".format(err_str))
-            if err_str.find("Repository not found") != -1:
+            if err_str.find("repository not found") != -1:
                 return False, 'Not found'
             else:
                 return False, 'Error'
@@ -47,8 +47,8 @@ class GitCommands(object):
         try:
             result = subprocess.run(['git', 'add', '.'], capture_output=True, text=True)
             self.log.debug("init check result:{}".format(result))
-            err = result.stderr
-            out = result.stdout
+            err = result.stderr.lower()
+            out = result.stdout.lower()
             return_code = result.returncode
             if return_code == 0:  # returns position in string where found
                 return True, 'Success'
@@ -57,7 +57,7 @@ class GitCommands(object):
         except Exception as error:
             err_str = error.args[0]
             self.log.info("ADD ERROR:{}".format(err_str))
-            if err_str.find("Repository not found") != -1:
+            if err_str.find("repository not found") != -1:
                 return False, 'Not found'
             else:
                 return False, 'Error'
@@ -68,11 +68,11 @@ class GitCommands(object):
         try:
             result = subprocess.run(['git', 'commit', '-m', 'Initial commit'], capture_output=True, text=True)
             self.log.debug("COMMIT:{}".format(result))
-            err = result.stderr
-            out = result.stdout
+            err = result.stderr.lower()
+            out = result.stdout.lower()
             return_code = result.returncode
             # noinspection PyTypeChecker
-            if out.find("Initial commit") != -1:  # returns position in string where found
+            if out.find("initial commit") != -1:  # returns position in string where found
                 return True, 'Initial commit'
             if return_code == 0:  # returns position in string where found
                 return True, 'Success'
@@ -81,7 +81,7 @@ class GitCommands(object):
         except Exception as error:
             err_str = error.args[0]
             self.log.info("INIT Check error:{}".format(err_str))
-            if err_str.find("Repository not found") != -1:
+            if err_str.find("repository not found") != -1:
                 return False, 'Not found'
             else:
                 return False, 'Error'
@@ -93,8 +93,8 @@ class GitCommands(object):
             # git remote add origin https://github.com/user/repo.git
             result = subprocess.run(['git', 'remote', 'add', 'origin', url], capture_output=True, text=True)
             self.log.debug("COMMIT:{}".format(result))
-            err = result.stderr
-            out = result.stdout
+            err = result.stderr.lower()
+            out = result.stdout.lower()
             return_code = result.returncode
             checked_url = self.get_remote_url(path)
             # noinspection PyTypeChecker
@@ -107,7 +107,7 @@ class GitCommands(object):
         except Exception as error:
             err_str = error.args[0]
             self.log.info("INIT Check error:{}".format(err_str))
-            if err_str.find("Repository not found") != -1:
+            if err_str.find("repository not found") != -1:
                 return False, 'Not found'
             else:
                 return False, 'Error'
@@ -121,15 +121,15 @@ class GitCommands(object):
             result = subprocess.run(['git', 'push', '--set-upstream', 'origin', 'master'], capture_output=True,
                                     text=True)
             self.log.debug("PUSH:{}".format(result))
-            err = result.stderr
-            out = result.stdout
+            err = result.stderr.lower()
+            out = result.stdout.lower()
             return_code = result.returncode
             # noinspection PyTypeChecker
             if return_code == 0:  # returns position in string where found
                 return True, None
             elif err.find("remote origin already exists") != -1:
                 return True, None
-            elif err.find('Permission denied') != -1:
+            elif err.find('permission denied') != -1:
                 return False, 'Permission denied'
             else:
                 return False, 'ERROR'
@@ -137,7 +137,7 @@ class GitCommands(object):
         except Exception as error:
             err_str = error.args[0]
             self.log.info("INIT Check error:{}".format(err_str))
-            if err_str.find("Repository not found") != -1:
+            if err_str.find("repository not found") != -1:
                 return False, 'Not found'
             else:
                 return False, 'Error'
@@ -148,17 +148,17 @@ class GitCommands(object):
         try:
             result = subprocess.run(['git', 'status'], capture_output=True, text=True)
             self.log.debug("init check result:{}".format(result))
-            err = result.stderr
-            out = result.stdout
+            err = result.stderr.lower()
+            out = result.stdout.lower().lower()
             # noinspection PyTypeChecker
-            if err.find("Not a git repository") != -1:  # returns position in string where found
+            if err.find("not a git repository") != -1:  # returns position in string where found
                 return False, 'No repo found'
-            elif out.find("On branch master") != -1:
+            elif out.find("on branch master") != -1:
                 return True, 'Success'
         except Exception as error:
             err_str = error.args[0]
             self.log.info("INIT Check error:{}".format(err_str))
-            if err_str.find("Repository not found") != -1:
+            if err_str.find("repository not found") != -1:
                 return False, 'No repo found'
             else:
                 return False, 'Error'
@@ -170,21 +170,21 @@ class GitCommands(object):
         try:
             result = subprocess.run(['git', 'status'], capture_output=True, text=True)
             self.log.debug("init check result:{}".format(result))
-            err = result.stderr
-            out = result.stdout
+            err = result.stderr.lower()
+            out = result.stdout.lower()
             # noinspection PyTypeChecker
             count = out.count("new file")
             # noinspection PyTypeChecker
-            if err.find("Not a git repository") != -1:  # returns position in string where found
+            if err.find("not a git repository") != -1:  # returns position in string where found
                 return False, 'No repo found'
             elif count > 0:
                 return True, count
-            elif out.find("On branch master") != -1:
+            elif out.find("on branch master") != -1:
                 return False, "None"
         except Exception as error:
             err_str = error.args[0]
             self.log.info("INIT Check error:{}".format(err_str))
-            if err_str.find("Repository not found") != -1:
+            if err_str.find("repository not found") != -1:
                 return False, 'No repo found'
             else:
                 return False, 'Error'
@@ -196,10 +196,10 @@ class GitCommands(object):
             result = subprocess.run(['git', 'show'], capture_output=True, text=True)
             # result = result[:256]
             # self.log.debug("init check result:{}".format(result))
-            err = result.stderr
-            out = result.stdout
+            err = result.stderr.lower()
+            out = result.stdout.lower()
             # noinspection PyTypeChecker
-            if err.find("Not a git repository") != -1:  # returns position in string where found
+            if err.find("not a git repository") != -1:  # returns position in string where found
                 return False, 'No repo found'
             elif out.find("commit") != -1:
                 git_date = self.get_commit_date(path)
@@ -227,7 +227,7 @@ class GitCommands(object):
         except Exception as error:
             err_str = error.args[0]
             self.log.info("INIT Check error:{}".format(err_str))
-            if err_str.find("Repository not found") != -1:
+            if err_str.find("repository not found") != -1:
                 return False, 'No repo found'
             else:
                 return False, 'Error'
@@ -239,22 +239,22 @@ class GitCommands(object):
             # git fetch --dry-run --verbose
             result = subprocess.run(['git', 'fetch', '--dry-run', '--verbose'], capture_output=True, text=True)
             self.log.debug("PUSH CHECK result:{}".format(result))
-            err = result.stderr
-            out = result.stdout
+            err = result.stderr.lower()
+            out = result.stdout.lower()
             return_code = result.returncode
             # noinspection PyTypeChecker
             if err.find(
-                    "The project you were looking for could not be found") != -1:  # returns position in string where found
+                    "the project you were looking for could not be found") != -1:  # returns position in string where found
                 return False, 'Missing'
             elif err.find("[new branch]") != -1:  # returns position in string where found
                 return True, 'New Branch'
             elif err.find('[up to date]') != -1:
                 return True, 'Up to date'
-            elif err.find('Not a git repository') != -1:
+            elif err.find('not a git repository') != -1:
                 return False, 'No Repo'
-            elif err.find('No remote repository specified') != -1:
+            elif err.find('no remote repository specified') != -1:
                 return False, 'No Repo'
-            elif err.find('Could not read from remote repository') != -1:
+            elif err.find('could not read from remote repository') != -1:
                 return False, 'No Repo'
             elif return_code == 0:
                 return True, 'Up to date'
@@ -268,10 +268,10 @@ class GitCommands(object):
         try:
             result = subprocess.run(['git', 'status'], capture_output=True, text=True)
             self.log.debug("init check result:{}".format(result))
-            err = result.stderr
-            out = result.stdout
+            err = result.stderr.lower()
+            out = result.stdout.lower()
             # noinspection PyTypeChecker
-            if err.find("Not a git repository") != -1:  # returns position in string where found
+            if err.find("not a git repository") != -1:  # returns position in string where found
                 return False, 'None'
             else:
                 return False, 'None'
@@ -289,12 +289,12 @@ class GitCommands(object):
         value = ""
         result = subprocess.run(['rm', '-r', path], capture_output=True, text=True)
         self.log.debug("init check result:{}".format(result))
-        err = result.stderr
-        out = result.stdout
+        err = result.stderr.lower()
+        out = result.stdout.lower()
         return_code = result.returncode
         self.log.debug("INIT:{}  ERROR:{}".format(out, err))
         # noinspection PyTypeChecker
-        if err.find("No such file or directory") != -1:
+        if err.find("no such file or directory") != -1:
             value = "ERROR : "
         elif return_code == 0:
             value = "SUCCESS : "
@@ -311,17 +311,17 @@ class GitCommands(object):
         try:
             result = subprocess.run(['git', 'log', '-1', '--format=%cd'], capture_output=True, text=True)
             self.log.debug("Get COMMIT DATE:{}".format(result))
-            err = result.stderr
-            out = result.stdout
+            err = result.stderr.lower()
+            out = result.stdout.lower()
             # noinspection PyTypeChecker
-            if err.find("Not a git repository") != -1:  # returns position in string where found
+            if err.find("not a git repository") != -1:  # returns position in string where found
                 return None
             else:
                 return out
         except Exception as error:
             err_str = error.args[0]
             self.log.info("INIT Check error:{}".format(err_str))
-            if err_str.find("Repository not found") != -1:
+            if err_str.find("repository not found") != -1:
                 return False, 'Not found'
             else:
                 return False, 'Error'
@@ -332,17 +332,17 @@ class GitCommands(object):
             # git config --get remote.origin.url
             result = subprocess.run(['git', 'config', '--get', 'remote.origin.url'], capture_output=True, text=True)
             self.log.debug("Get REMOTE URL DATE:{}".format(result))
-            err = result.stderr
-            out = result.stdout
+            err = result.stderr.lower()
+            out = result.stdout.lower()
             # noinspection PyTypeChecker
-            if err.find("Not a git repository") != -1:  # returns position in string where found
+            if err.find("not a git repository") != -1:  # returns position in string where found
                 return None
             else:
                 return out
         except Exception as error:
             err_str = error.args[0]
             self.log.info("INIT Check error:{}".format(err_str))
-            if err_str.find("Repository not found") != -1:
+            if err_str.find("repository not found") != -1:
                 return False, 'Not found'
             else:
                 return False, 'Error'
@@ -362,8 +362,8 @@ class GitCommands(object):
             ['git', 'subtree', 'add', '--prefix', folder_for_subtree, remote_project, 'master', '--squash'],
             capture_output=True, text=True)
         self.log.debug("init check result:{}".format(result))
-        err = result.stderr
-        out = result.stdout
+        err = result.stderr.lower()
+        out = result.stdout.lower()
         return_code = result.returncode
 
         self.log.debug("INIT:{}  ERROR:{}".format(out, err))
